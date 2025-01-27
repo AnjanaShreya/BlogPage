@@ -1,0 +1,8 @@
+- Models/
+  - blog.model.js
+- Controllers/
+  - blog.controller.js
+- Routes/
+  - blog.routes.js
+- server.js
+- .env

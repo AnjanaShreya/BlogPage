@@ -21,7 +21,8 @@ const Card = () => {
   return (
     <div className="flex flex-wrap">
       {blogData.map((blog) => (
-        <div key={blog._id} className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-5 w-80 shadow-md font-sans text-gray-800 m-5">
+        <div key={blog._id} 
+        className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-5 w-80 shadow-md font-sans text-gray-800 m-5  border border-gray-300">
           <div className="mb-3">
             <h4 className="text-lg font-semibold">{blog.heading}</h4>
             <p className="text-sm text-gray-500">{new Date(blog.createdAt).toLocaleDateString()} • {blog.category}</p>

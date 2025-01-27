@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom"; 
 
 const Signup = ({ onClose, onLogin }) => {
-  const [isSignIn, setIsSignIn] = useState(true); // Toggle between Sign In and Sign Up
-  const navigate = useNavigate(); // Initialize navigation
+  const [isSignIn, setIsSignIn] = useState(true); 
+  const navigate = useNavigate(); 
 
   const toggleForm = () => {
     setIsSignIn(!isSignIn);
@@ -12,9 +12,8 @@ const Signup = ({ onClose, onLogin }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Simulate successful login/signup
-    onLogin(); // Notify parent component about login
-    navigate("/blogform"); // Redirect to blogform page
+    onLogin(); 
+    navigate("/blogform"); 
   };
 
   return (
@@ -78,12 +77,22 @@ const Signup = ({ onClose, onLogin }) => {
           >
             {isSignIn ? "Sign In" : "Sign Up"}
           </button>
+
+          {isSignIn && (
+            <div className="text-center mt-1">
+              <a href="/forgotPassword" className="text-[#002a32d5] font-medium hover:underline">
+                Forgot Password?
+              </a>
+            </div>
+          )}
+
         </form>
 
         {/* Toggle Between Sign In and Sign Up */}
         <p className="mt-4 text-sm text-center text-gray-500">
           {isSignIn ? (
             <>
+              
               Don't have an account?{" "}
               <span
                 onClick={toggleForm}
