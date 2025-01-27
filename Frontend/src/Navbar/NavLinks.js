@@ -4,21 +4,19 @@ import { links } from "./Mylinks";
 
 const NavLinks = () => {
   const [heading, setHeading] = useState("");
-  const [subHeading, setSubHeading] = useState("");
 
   return (
     <>
       {links.map((link, index) => (
-        <div key={index}> {/* Added unique key for React map */}
+        <div key={index}> 
           <div className="px-3 text-left md:cursor-pointer group">
             <h1
               className="py-7 flex justify-between items-center md:pr-0 pr-5 group"
               onClick={() => {
                 setHeading(heading !== link.name ? link.name : ""); // Toggle heading
-                setSubHeading(""); // Reset subheading
               }}
             >
-              {link.name} 
+              {link.name}
               <span className="text-xl md:hidden inline">
                 <ion-icon
                   name={`${
@@ -78,38 +76,13 @@ const NavLinks = () => {
               {/* Sub-links for Mobile */}
               {link.sublinks.map((slinks, subIndex) => (
                 <div key={subIndex}> {/* Added unique key */}
-                  <div>
-                    <h1
-                      onClick={() =>
-                        setSubHeading(
-                          subHeading !== slinks.Head ? slinks.Head : ""
-                        )
-                      }
-                      className="py-4 pl-7 font-semibold flex justify-between items-center md:pr-0 pr-5"
-                    >
-                      {slinks.Head}
-                      <span className="text-xl inline">
-                        <ion-icon
-                          name={`${
-                            subHeading === slinks.Head
-                              ? "chevron-up"
-                              : "chevron-down"
-                          }`}
-                        ></ion-icon>
-                      </span>
-                    </h1>
-                    <ul
-                      className={`${
-                        subHeading === slinks.Head ? "md:hidden" : "hidden"
-                      }`}
-                    >
-                      {slinks.sublink.map((slink, slinkIndex) => (
-                        <li key={slinkIndex} className="py-3 pl-14">
-                          <Link to={slink.link}>{slink.name}</Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <ul>
+                    {slinks.sublink.map((slink, slinkIndex) => (
+                      <li key={slinkIndex} className="py-3 pl-14">
+                        <Link to={slink.link}>{slink.name}</Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
@@ -119,5 +92,6 @@ const NavLinks = () => {
     </>
   );
 };
+
 
 export default NavLinks;

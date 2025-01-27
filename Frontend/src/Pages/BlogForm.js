@@ -13,6 +13,7 @@ const BlogForm = () => {
     degree: "",
     year: "",
     shortBio: "",
+    heading: "",
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -57,7 +58,11 @@ const BlogForm = () => {
       shortBio: formData.shortBio,
       category: selectedCategory === "Other Category" ? otherCategory : selectedCategory,
       blogContent: blogContent,
+      heading: formData.heading, 
     };
+
+    // console.log('data:', formData.heading);
+    
 
     try {
       const response = await fetch("http://localhost:5000/api/submit", {
@@ -72,7 +77,7 @@ const BlogForm = () => {
 
       if (response.ok) {
         alert("Your blog has been submitted successfully!");
-        console.log("Blog submitted:", data);
+        // console.log("Blog submitted:", data);
         
         // Reset the form
         setFormData({
@@ -81,6 +86,7 @@ const BlogForm = () => {
           degree: "",
           year: "",
           shortBio: "",
+          heading: "",
         });
         setSelectedCategory("");
         setOtherCategory("");
@@ -186,7 +192,7 @@ const BlogForm = () => {
               </label>
               <textarea
                 id="shortBio"
-                placeholder="Write a short bio..."
+                placeholder="Write a short bio about yourself..."
                 value={formData.shortBio}
                 onChange={handleInputChange}
                 required
@@ -243,6 +249,21 @@ const BlogForm = () => {
                 />
               </div>
             )}
+
+            <div>
+              <label htmlFor="name" className="block text-white font-medium mb-1">
+                Heading: <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="heading"
+                placeholder="Enter the blog heading"
+                value={formData.heading}
+                onChange={handleInputChange}
+                required
+                className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
+              />
+            </div>
 
             <div>
               <label

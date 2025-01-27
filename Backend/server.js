@@ -5,13 +5,14 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const blogRoutes = require("./Routes/blog.routes");
-
 const app = express();
+
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // Connect to MongoDB
 mongoose
@@ -21,6 +22,7 @@ mongoose
   })
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.log("MongoDB connection error:", err));
+
 
 // Routes
 app.use("/api", blogRoutes);

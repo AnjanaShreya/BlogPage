@@ -51,11 +51,6 @@ const Navbar = () => {
             </Link>
           </li>
           <NavLinks />
-          {/* <li>
-            <Link to="/internships" className="py-7 px-3 hover:text-[#002a32d5] hover:font-bold">
-              Internships
-            </Link>
-          </li> */}
           <li>
             <Link to="/contactus" className="py-7 px-3 hover:text-[#002a32d5] hover:font-bold">
               Contact Us
@@ -80,9 +75,6 @@ const Navbar = () => {
             </Link>
           </li>
           <NavLinks />
-          {/* <Link to="/internships" className="py-7 px-3 block hover:text-[#002a32d5] hover:font-bold">
-            Internships
-          </Link> */}
           <Link to="/contactus" className="py-7 px-3 block hover:text-[#002a32d5] hover:font-bold">
             Contact Us
           </Link>

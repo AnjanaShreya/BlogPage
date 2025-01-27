@@ -9,6 +9,7 @@ const blogSchema = new mongoose.Schema(
     shortBio: { type: String, required: true },
     category: { type: String, required: true },
     blogContent: { type: String, required: true },
+    heading: { type: String, required: true },
   },
   { timestamps: true }
 );

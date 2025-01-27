@@ -10,7 +10,7 @@ import SearchFilter from "./SearchFilter";
 const Dashboard = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [SearchQuery, setSearchQuery] = useState();
+  // const [SearchQuery, setSearchQuery] = useState();
 
   const handleButtonClick = () => {
     if (isLoggedIn) {
@@ -29,9 +29,9 @@ const Dashboard = () => {
     setShowPopup(false); 
   };
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value); 
-  };
+  // const handleSearch = (e) => {
+  //   setSearchQuery(e.target.value); 
+  // };
 
   return (
     <div>
@@ -59,10 +59,7 @@ const Dashboard = () => {
       <SearchFilter />
       <div className="h-auto">
         {/* Blog Short Display */}
-        <div className="md:flex md:mx-16 my-8">
-          <Card />
-          <Card />
-          <Card />
+        <div className="md:flex md:mx-9 my-8">
           <Card />
         </div>
         {/* About Us Section */}
