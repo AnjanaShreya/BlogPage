@@ -16,8 +16,7 @@ const BlogForm = () => {
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const navigate = useNavigate(); // Initialize the navigate function
-
+  const navigate = useNavigate(); 
 
   // Handle input changes for form fields
   const handleInputChange = (e) => {
@@ -72,11 +71,22 @@ const BlogForm = () => {
       const data = await response.json();
 
       if (response.ok) {
+        alert("Your blog has been submitted successfully!");
         console.log("Blog submitted:", data);
-        // Optionally handle success (e.g., show a success message or reset form)
+        
+        // Reset the form
+        setFormData({
+          name: "",
+          university: "",
+          degree: "",
+          year: "",
+          shortBio: "",
+        });
+        setSelectedCategory("");
+        setOtherCategory("");
+        setBlogContent("");
       } else {
         console.error("Error:", data.message);
-        // Optionally handle error (e.g., show an error message)
       }
     } catch (error) {
       console.error("Error submitting the blog:", error);
@@ -84,7 +94,7 @@ const BlogForm = () => {
   };
 
   const handleGoToDashboard = () => {
-    navigate("/dashboard"); // This will redirect to the dashboard
+    navigate("/"); 
   };
 
   return (
