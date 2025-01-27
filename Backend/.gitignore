@@ -1,0 +1,35 @@
+# Node.js dependencies
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# Directory for build output
+/dist
+/build
+
+# Dependency directory
+jspm_packages/
+
+# VSCode settings
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE settings (IntelliJ, JetBrains)
+.idea/
+
+# npm package lock file (Optional, if you want to ignore it)
+package-lock.json
+
+# yarn lock file (Optional, if you want to ignore it)
+yarn.lock

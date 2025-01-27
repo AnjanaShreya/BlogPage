@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import img2 from "../assets/img2.jpg";
 import Preview from "../components/Preview";
+import { useNavigate } from "react-router-dom"; 
 
 const BlogForm = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -15,27 +16,75 @@ const BlogForm = () => {
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+  const navigate = useNavigate(); // Initialize the navigate function
+
+
+  // Handle input changes for form fields
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    setFormData({ ...formData, [id]: value });
   };
 
+  // Handle the category change
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+  };
+
+  // Handle the blog content change
   const handleBlogChange = (e) => {
     setBlogContent(e.target.value);
   };
 
+  // Handle preview
   const handlePreview = (e) => {
     e.preventDefault();
     setIsPreviewOpen(true);
   };
 
+  // Close preview
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted Form Data:", formData);
-    console.log("Submitted Blog Content:", blogContent);
+    
+    const formPayload = {
+      name: formData.name,
+      university: formData.university,
+      degree: formData.degree,
+      year: formData.year,
+      shortBio: formData.shortBio,
+      category: selectedCategory === "Other Category" ? otherCategory : selectedCategory,
+      blogContent: blogContent,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formPayload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Blog submitted:", data);
+        // Optionally handle success (e.g., show a success message or reset form)
+      } else {
+        console.error("Error:", data.message);
+        // Optionally handle error (e.g., show an error message)
+      }
+    } catch (error) {
+      console.error("Error submitting the blog:", error);
+    }
+  };
+
+  const handleGoToDashboard = () => {
+    navigate("/dashboard"); // This will redirect to the dashboard
   };
 
   return (
@@ -43,13 +92,23 @@ const BlogForm = () => {
       <div className="min-h-screen flex justify-center items-center bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${img2})` }}>
         <div className="bg-black bg-opacity-70 p-6 rounded-lg m-5 w-7/12">
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <h2 className="text-white text-2xl font-bold mb-4 text-center underline">
               Submit Your Blog
             </h2>
 
+            {/* more changes to make */}
+            <button
+              onClick={handleGoToDashboard}
+              className="bg-teal-500 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-600"
+            >
+            Go to Dashboard
+            </button>
+
             <h3 className="text-white text-xl font-bold">Guidelines:</h3>
-            <h3 className="text-white">To display an input field for "Other Category" when "Other Category" is selected, we can use React's useState to track the selected value and conditionally render the additional input field. Here's the updated code:</h3>
+            <h3 className="text-white">
+              To display an input field for "Other Category" when "Other Category" is selected, we can use React's useState to track the selected value and conditionally render the additional input field. Here's the updated code:
+            </h3>
 
             <div>
               <label htmlFor="name" className="block text-white font-medium mb-1">
@@ -59,6 +118,8 @@ const BlogForm = () => {
                 type="text"
                 id="name"
                 placeholder="Enter your name"
+                value={formData.name}
+                onChange={handleInputChange}
                 required
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
               />
@@ -72,6 +133,8 @@ const BlogForm = () => {
                 type="text"
                 id="university"
                 placeholder="Enter your university"
+                value={formData.university}
+                onChange={handleInputChange}
                 required
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
               />
@@ -85,6 +148,8 @@ const BlogForm = () => {
                 type="text"
                 id="degree"
                 placeholder="Enter your degree"
+                value={formData.degree}
+                onChange={handleInputChange}
                 required
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
               />
@@ -98,6 +163,8 @@ const BlogForm = () => {
                 type="text"
                 id="year"
                 placeholder="Enter your year"
+                value={formData.year}
+                onChange={handleInputChange}
                 required
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
               />
@@ -110,6 +177,8 @@ const BlogForm = () => {
               <textarea
                 id="shortBio"
                 placeholder="Write a short bio..."
+                value={formData.shortBio}
+                onChange={handleInputChange}
                 required
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300 h-20 resize-none"
               ></textarea>
@@ -122,7 +191,7 @@ const BlogForm = () => {
               <select
                 id="category"
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={handleCategoryChange}
                 required
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
               >
@@ -157,6 +226,8 @@ const BlogForm = () => {
                   type="text"
                   id="otherCategory"
                   placeholder="Enter category name"
+                  value={otherCategory}
+                  onChange={(e) => setOtherCategory(e.target.value)}
                   required
                   className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
                 />
@@ -195,6 +266,7 @@ const BlogForm = () => {
               </button>
             </div>
           </form>
+
           {isPreviewOpen && (
             <Preview
               formData={formData}
