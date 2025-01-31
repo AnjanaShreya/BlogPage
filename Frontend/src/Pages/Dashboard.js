@@ -1,37 +1,37 @@
 import React, { useState } from "react";
 import Navbar from "../Navbar/Navbar";
-import Signup from "./Signup";
+import Signup from "../components/Signup";
 import Footer from "../Navbar/Footer";
-import ProfileCard from "./ProfileCard";
-import Card from "./Card";
+import ProfileCard from "../components/ProfileCard";
+import Card from "../components/Card";
 import img0 from '../assets/img0.jpg';
-import SearchFilter from "./SearchFilter";
+import SearchFilter from "../components/SearchFilter";
 
 const Dashboard = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  // const [SearchQuery, setSearchQuery] = useState();
+  const [SearchQuery, setSearchQuery] = useState("");
 
   const handleButtonClick = () => {
     if (isLoggedIn) {
       window.location.href = "/blogform";
     } else {
-      setShowPopup(true); 
+      setShowPopup(true);
     }
   };
 
   const handleClosePopup = () => {
-    setShowPopup(false); 
+    setShowPopup(false);
   };
 
   const handleLogin = () => {
-    setIsLoggedIn(true); 
-    setShowPopup(false); 
+    setIsLoggedIn(true);
+    setShowPopup(false);
   };
 
-  // const handleSearch = (e) => {
-  //   setSearchQuery(e.target.value); 
-  // };
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
     <div>
@@ -56,11 +56,11 @@ const Dashboard = () => {
       {/* Show Signup Popup */}
       {showPopup && <Signup onClose={handleClosePopup} onLogin={handleLogin} />}
       {/* Content Goes here */}
-      <SearchFilter />
+      <SearchFilter handleSearch={handleSearch} />
       <div className="h-auto">
         {/* Blog Short Display */}
         <div className="md:flex md:mx-9 my-8">
-          <Card />
+          <Card searchQuery={SearchQuery} />
         </div>
         {/* About Us Section */}
         <div>
@@ -91,6 +91,5 @@ const parallax = {
   backgroundRepeat: "no-repeat",
   backgroundSize: "cover",
 };
-
 
 export default Dashboard;

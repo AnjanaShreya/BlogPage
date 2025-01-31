@@ -11,11 +11,24 @@ const getBlogs = async (req, res) => {
   }
 };
 
+// Controller to fetch a single blog by ID
+const getBlogById = async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+    res.json(blog);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching blog." });
+  }
+};
+
 // Controller to create a blog
 const createBlog = async (req, res) => {
   try {
     const { name, university, degree, year, shortBio, category, blogContent, heading } = req.body;
-    // console.log('Received heading:', heading);
 
     const newBlog = new Blog({
       name,
@@ -36,4 +49,4 @@ const createBlog = async (req, res) => {
   }
 };
 
-module.exports = { getBlogs, createBlog };
+module.exports = { getBlogs, getBlogById, createBlog };

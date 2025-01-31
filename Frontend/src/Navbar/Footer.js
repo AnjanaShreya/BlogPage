@@ -35,7 +35,7 @@ const Footer = () => {
             <p>Mahindra University, <br/> Bahaduepally, Jeedimetla, <br /> Hyderabad, Tealngana, India - 500043</p>
         </div>
       </div>
-      <div className='bg-[#d5be38] font-semibold text-gray-900 text-center p-2'>
+      <div className='  bg-[#d5be38] font-semibold text-gray-900 text-center p-2'>
         Copyright © 2024 Anjana Shreya. All rights reserved
       </div>
     </div>

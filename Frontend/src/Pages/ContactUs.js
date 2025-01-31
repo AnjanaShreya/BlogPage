@@ -1,7 +1,7 @@
 import React from "react";
-import img2 from "../assets/img2.jpg";
 import Navbar from "../Navbar/Navbar";
 import Footer from "../Navbar/Footer";
+import NavBottom from "../components/NavBottom";
 
 const ContactUs = () => {
   return (
@@ -11,15 +11,7 @@ const ContactUs = () => {
         <Navbar />
       </div>
 
-      {/* Hero Image Section */}
-      <div className="relative">
-        <img src={img2} alt="Contact Us" className="w-full h-72 object-cover" />
-
-        {/* Overlay with Title */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center p-28 z-10">
-          <h1 className="text-white text-3xl font-bold">Contact Us</h1>
-        </div>
-      </div>
+      <NavBottom title="Contact Us" />
 
       {/* Main Content */}
       <div className="mx-6 px-4 py-12"> 

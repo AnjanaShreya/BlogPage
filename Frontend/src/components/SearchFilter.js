@@ -12,7 +12,7 @@ const SearchBar = ({ searchQuery, handleSearch }) => {
       {/* Search Input */}
       <input
         type="text"
-        placeholder="Search"
+        placeholder="Search by Heading or KeyWord"
         value={searchQuery}
         onChange={handleSearch}
         className="w-full py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-gray-700"
