@@ -31,7 +31,9 @@ const BlogDetails = () => {
 
   return (
     <div>
-      <Navbar />
+      <div className="relative z-20">
+        <Navbar />
+      </div>
       <NavBottom title={blog.heading} category={blog.category} date={new Date(blog.createdAt).toLocaleDateString()} />
   
       <div className="bg-gray-100 py-12 flex-grow">

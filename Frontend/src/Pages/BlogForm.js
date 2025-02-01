@@ -192,7 +192,7 @@ const BlogForm = () => {
               </label>
               <textarea
                 id="shortBio"
-                placeholder="Write a short bio about yourself..."
+                placeholder="Write a short bio about the blog..."
                 value={formData.shortBio}
                 onChange={handleInputChange}
                 required
@@ -222,7 +222,7 @@ const BlogForm = () => {
                 <option value="Administrative Law">Administrative Law</option>
                 <option value="The Law of Contracts">The Law of Contracts</option>
                 <option value="BNSS 2023">BNSS 2023</option>
-                <option value="The Law of Evidence">The Law of Evidence</option>
+                <option value="The Law of Evidence">Evidence Act</option>
                 <option value="Law of Torts">Law of Torts</option>
                 <option value="Election Laws">Election Laws</option>
                 <option value="Human Rights">Human Rights</option>

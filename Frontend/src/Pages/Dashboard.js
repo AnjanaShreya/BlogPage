@@ -68,7 +68,10 @@ const Dashboard = () => {
             <h1 className="text-2xl font-medium text-center h-[500px] my-8 relative">
               <div className="absolute inset-0 bg-black bg-opacity-50"></div>
               <div className="relative z-10 flex items-center justify-center h-full text-white">
-                ABOUT US
+                <div>
+                  ABOUT US
+                  <p className="text-base md:px-32 md:pt-5">A law blog page that serves as a hub for legal insights, discussions, and updates while also offering various programs to engage aspiring legal professionals. Along with well-researched articles on contemporary legal issues, case analyses, and legislative updates, the platform hosts moot court competitions, allowing students to refine their advocacy skills. Additionally, it provides summer and winter programs featuring internships, research projects, and skill-building workshops. Panel discussions with legal experts, judges, and academics further enhance learning by fostering critical debates on pressing legal matters. This multi-faceted approach creates a dynamic space for law enthusiasts to gain knowledge, network, and develop practical skills.</p>
+                </div>
               </div>
             </h1>
           </div>

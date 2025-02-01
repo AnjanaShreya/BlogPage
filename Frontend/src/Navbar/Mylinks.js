@@ -11,7 +11,7 @@ export const links = [
             { name: "Civil Procedure 1908", link: "/" }, 
             { name: "Administrative Law", link: "/" },
             { name: "The Law of Contracts", link: "/" },
-            { name: "Evidence Act", link: "/" },
+            { name: "Evidence Act", link: "/evidenceact" },
             { name: "BNSS 2023", link: "/" },
             { name: "Law of Torts", link: "/" },
             { name: "Election laws", link: "/" },
