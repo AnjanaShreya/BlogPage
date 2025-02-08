@@ -1,20 +1,23 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; 
 import Navbar from "../Navbar/Navbar";
 import Signup from "../components/Signup";
 import Footer from "../Navbar/Footer";
 import ProfileCard from "../components/ProfileCard";
 import Card from "../components/Card";
 import img0 from '../assets/img0.jpg';
-import SearchFilter from "../components/SearchFilter";
+import Button from "../components/Button";
 
 const Dashboard = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [SearchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
+  
+  const navigate = useNavigate();
 
   const handleButtonClick = () => {
     if (isLoggedIn) {
-      window.location.href = "/blogform";
+      navigate("/blogform");
     } else {
       setShowPopup(true);
     }
@@ -29,8 +32,13 @@ const Dashboard = () => {
     setShowPopup(false);
   };
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
+  // const handleSearch = (e) => {
+  //   setSearchQuery(e.target.value);
+  // };
+
+  // Redirect to All Blogs when "See More" is clicked
+  const handleSeeMore = () => {
+    navigate("/allblogs");
   };
 
   return (
@@ -55,13 +63,20 @@ const Dashboard = () => {
 
       {/* Show Signup Popup */}
       {showPopup && <Signup onClose={handleClosePopup} onLogin={handleLogin} />}
-      {/* Content Goes here */}
-      <SearchFilter handleSearch={handleSearch} />
+      
+      {/* Search Bar */}
+      {/* <SearchFilter handleSearch={handleSearch} /> */}
+      
       <div className="h-auto">
         {/* Blog Short Display */}
-        <div className="md:flex md:mx-9 my-8">
-          <Card searchQuery={SearchQuery} />
+        <div className="my-8">
+          <Card className="md:flex md:mx-9" searchQuery={searchQuery} limit={8} />
+          <div className="flex justify-center mt-5">
+            <Button onClick={handleSeeMore} title="See More" />
+          </div>
         </div>
+
+
         {/* About Us Section */}
         <div>
           <div style={parallax}>
@@ -70,12 +85,15 @@ const Dashboard = () => {
               <div className="relative z-10 flex items-center justify-center h-full text-white">
                 <div>
                   ABOUT US
-                  <p className="text-base md:px-32 md:pt-5">A law blog page that serves as a hub for legal insights, discussions, and updates while also offering various programs to engage aspiring legal professionals. Along with well-researched articles on contemporary legal issues, case analyses, and legislative updates, the platform hosts moot court competitions, allowing students to refine their advocacy skills. Additionally, it provides summer and winter programs featuring internships, research projects, and skill-building workshops. Panel discussions with legal experts, judges, and academics further enhance learning by fostering critical debates on pressing legal matters. This multi-faceted approach creates a dynamic space for law enthusiasts to gain knowledge, network, and develop practical skills.</p>
+                  <p className="text-base md:px-32 md:pt-5">
+                    A law blog page that serves as a hub for legal insights, discussions, and updates while also offering various programs to engage aspiring legal professionals. Along with well-researched articles on contemporary legal issues, case analyses, and legislative updates, the platform hosts moot court competitions, allowing students to refine their advocacy skills. Additionally, it provides summer and winter programs featuring internships, research projects, and skill-building workshops. Panel discussions with legal experts, judges, and academics further enhance learning by fostering critical debates on pressing legal matters. This multi-faceted approach creates a dynamic space for law enthusiasts to gain knowledge, network, and develop practical skills.
+                  </p>
                 </div>
               </div>
             </h1>
           </div>
         </div>
+
         {/* Profiles Section */}
         <div className="mb-8">
           <ProfileCard />

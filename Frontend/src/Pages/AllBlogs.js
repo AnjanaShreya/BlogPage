@@ -4,22 +4,24 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar/Navbar';
 import CategoryHeading from '../components/CategoryHeading';
 import Footer from '../Navbar/Footer';
+import SearchBar from '../components/SearchFilter';
 
-const EvidenceAct = () => {
+const AllBlogs = () => {
   const [blogData, setBlogData] = useState([]);
+  const [filteredBlogs, setFilteredBlogs] = useState([]); // Stores search results
   const [expandedCards, setExpandedCards] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const maxLength = 90;
 
+  // Fetch Blogs
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs"); // Adjust API URL if needed
-        const filteredBlogs = response.data.filter(blog =>
-          ["The Law of Evidence", "Evidence Act"].includes(blog.category)
-        );
-        const sortedBlogs = filteredBlogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const response = await axios.get("http://localhost:5000/api/blogs");
+        const sortedBlogs = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setBlogData(sortedBlogs);
+        setFilteredBlogs(sortedBlogs);
       } catch (error) {
         console.error("Error fetching blog data", error);
       }
@@ -27,6 +29,7 @@ const EvidenceAct = () => {
     fetchBlogs();
   }, []);
 
+  // Handle Expand/Collapse
   const toggleExpand = (id) => {
     setExpandedCards((prev) => ({
       ...prev,
@@ -34,16 +37,32 @@ const EvidenceAct = () => {
     }));
   };
 
+  // Handle Search
+  const handleSearch = (event) => {
+    const query = event.target.value.toLowerCase();
+    setSearchQuery(query);
+
+    const filtered = blogData.filter((blog) =>
+      blog.heading.toLowerCase().includes(query) || blog.shortBio.toLowerCase().includes(query) || blog.name.toLowerCase().includes(query)
+    );
+
+    setFilteredBlogs(filtered);
+  };
+
   return (
     <div>
       <div className="relative z-20">
         <Navbar />
       </div>
-      <CategoryHeading title="Evidence Act" />
+      <CategoryHeading title="All Blogs" />
 
+      {/* Search Bar */}
+      <SearchBar searchQuery={searchQuery} handleSearch={handleSearch} />
+
+      {/* Blog Cards */}
       <div className="flex flex-wrap justify-center min-h-20 py-5">
-        {blogData.length > 0 ? (
-          blogData.map((blog) => {
+        {filteredBlogs.length > 0 ? (
+          filteredBlogs.map((blog) => {
             const isExpanded = expandedCards[blog._id] || false; 
             return (
               <div key={blog._id} className="bg-gradient-to-br from-amber-50 to-gray-200 rounded-lg p-6 w-80 shadow-lg font-sans text-gray-800 m-5 transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
@@ -80,12 +99,13 @@ const EvidenceAct = () => {
             );
           })
         ) : (
-          <div className="w-full text-center text-gray-500">No blogs found related to the Law of Evidence or Evidence Act.</div>
+          <div className="w-full text-center text-gray-500">No blogs found</div>
         )}
       </div>
+      
       <Footer />
     </div>
   );
 };
 
-export default EvidenceAct;
+export default AllBlogs;

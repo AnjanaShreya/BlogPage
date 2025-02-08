@@ -12,20 +12,19 @@ const Navbar = () => {
 
   const handleButtonClick = () => {
     if (isLoggedIn) {
-      // If logged in, redirect directly to the blogform page
       window.location.href = "/blogform";
     } else {
-      setShowPopup(true); // Show the login/signup popup
+      setShowPopup(true); 
     }
   };
 
   const handleClosePopup = () => {
-    setShowPopup(false); // Close popup
+    setShowPopup(false); 
   };
 
   const handleLogin = () => {
-    setIsLoggedIn(true); // Set logged-in state
-    setShowPopup(false); // Close the popup
+    setIsLoggedIn(true); 
+    setShowPopup(false); 
   };
 
   return (
@@ -33,7 +32,9 @@ const Navbar = () => {
       <div className="flex items-center font-medium justify-between px-5 md:px-10">
         {/* Logo Section */}
         <div className="z-50 p-5 flex justify-between w-full md:w-auto">
-          <img src={Logo} alt="Logo" className="md:cursor-pointer h-12" />
+          <Link to="/">
+            <img src={Logo} alt="Logo" className="md:cursor-pointer h-12" />
+          </Link>
           {/* Mobile Menu Toggle */}
           <div
             className="text-3xl md:hidden cursor-pointer"
@@ -60,7 +61,7 @@ const Navbar = () => {
 
         {/* Publish Button for Desktop */}
         <div className="hidden md:block">
-          <Button onClick={handleButtonClick} />
+          <Button onClick={handleButtonClick} title="Publish"/>
         </div>
 
         {/* Mobile Navigation */}
@@ -80,7 +81,7 @@ const Navbar = () => {
           </Link>
           <div className="py-5">
             {/* Publish Button for Mobile */}
-            <Button onClick={handleButtonClick} />
+            <Button onClick={handleButtonClick} title="Publish" />
           </div>
         </ul>
       </div>

@@ -5,7 +5,7 @@ import Navbar from '../Navbar/Navbar';
 import CategoryHeading from '../components/CategoryHeading';
 import Footer from '../Navbar/Footer';
 
-const EvidenceAct = () => {
+const OtherCategories = () => {
   const [blogData, setBlogData] = useState([]);
   const [expandedCards, setExpandedCards] = useState({});
   const navigate = useNavigate();
@@ -15,14 +15,37 @@ const EvidenceAct = () => {
     const fetchBlogs = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/blogs"); // Adjust API URL if needed
-        const filteredBlogs = response.data.filter(blog =>
-          ["The Law of Evidence", "Evidence Act"].includes(blog.category)
+        
+        // Categories to exclude
+        const excludedCategories = [
+            "Constitution Law",
+            "Constitution of India",
+            "Civil Procedure 1908",
+            "Administrative Law",
+            "The Law of Contracts",
+            "Evidence Act",
+            "BNSS 2023",
+            "Law of Torts",
+            "Election laws",
+            "Human Rights",
+            "The Law of Evidence"
+        ];
+        
+        // Filter out the excluded categories
+        const filteredBlogs = response.data.filter(blog => 
+            !excludedCategories.includes(blog.category)
         );
-        const sortedBlogs = filteredBlogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        // Sort blogs by latest createdAt date
+        const sortedBlogs = filteredBlogs.sort((a, b) => 
+            new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        
         setBlogData(sortedBlogs);
       } catch (error) {
         console.error("Error fetching blog data", error);
-      }
+    }
+          
     };
     fetchBlogs();
   }, []);
@@ -39,7 +62,7 @@ const EvidenceAct = () => {
       <div className="relative z-20">
         <Navbar />
       </div>
-      <CategoryHeading title="Evidence Act" />
+      <CategoryHeading title="Other Categories" />
 
       <div className="flex flex-wrap justify-center min-h-20 py-5">
         {blogData.length > 0 ? (
@@ -80,7 +103,7 @@ const EvidenceAct = () => {
             );
           })
         ) : (
-          <div className="w-full text-center text-gray-500">No blogs found related to the Law of Evidence or Evidence Act.</div>
+          <div className="w-full text-center text-gray-500">No blogs found related to the Other Categories</div>
         )}
       </div>
       <Footer />
@@ -88,4 +111,4 @@ const EvidenceAct = () => {
   );
 };
 
-export default EvidenceAct;
+export default OtherCategories;

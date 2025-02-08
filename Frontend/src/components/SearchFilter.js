@@ -1,7 +1,7 @@
 import React from 'react';
 import searchIcon from '../assets/serach.svg';
 
-const SearchBar = ({ searchQuery, handleSearch }) => {
+const SearchFilter = ({ searchQuery, handleSearch }) => {
   return (
     <div className="relative w-full max-w-3xl mx-auto my-4">
       {/* Search Icon */}
@@ -12,7 +12,7 @@ const SearchBar = ({ searchQuery, handleSearch }) => {
       {/* Search Input */}
       <input
         type="text"
-        placeholder="Search by Heading or KeyWord"
+        placeholder="Search by Heading or KeyWord or Author Name"
         value={searchQuery}
         onChange={handleSearch}
         className="w-full py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-gray-700"
@@ -21,4 +21,4 @@ const SearchBar = ({ searchQuery, handleSearch }) => {
   );
 };
 
-export default SearchBar;
+export default SearchFilter;
