@@ -60,12 +60,12 @@ const AllBlogs = () => {
       <SearchBar searchQuery={searchQuery} handleSearch={handleSearch} />
 
       {/* Blog Cards */}
-      <div className="flex flex-wrap justify-center min-h-20 py-5">
+      <div className="flex flex-wrap justify-center min-h-20 py-5 mx-28">
         {filteredBlogs.length > 0 ? (
           filteredBlogs.map((blog) => {
             const isExpanded = expandedCards[blog._id] || false; 
             return (
-              <div key={blog._id} className="bg-gradient-to-br from-amber-50 to-gray-200 rounded-lg p-6 w-80 shadow-lg font-sans text-gray-800 m-5 transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
+              <div key={blog._id} className="bg-gradient-to-br from-amber-50 to-gray-200 rounded-lg p-6 w-96 shadow-lg font-sans text-gray-800 m-5 transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
                 <div className="mb-4">
                   <h4 className="text-xl font-semibold text-gray-700">{blog.heading}</h4>
                   <p className="text-sm text-gray-500 mt-1">{new Date(blog.createdAt).toLocaleDateString()} • {blog.category}</p>

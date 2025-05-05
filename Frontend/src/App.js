@@ -31,10 +31,10 @@ function App() {
           <Route path='/lawoftorts' element={<LawofTorts />} />
           <Route path='/othercategories' element={<OtherCategories />} />
           {/* Admin Routes */}
-          <Route path='/adminpage' element={<AdminPage/>} />
           <Route path='/adminlogin' element={<AdminLogin /> } />
+          <Route path='/adminpage' element={<AdminPage/>} />
           <Route path="/mootcourt" element={<MootCourt />} />
-        <Route path="/swprograms" element={<SWPrograms />} />
+          <Route path="/swprograms" element={<SWPrograms />} />
         </Routes>
       </div>
     </Router>

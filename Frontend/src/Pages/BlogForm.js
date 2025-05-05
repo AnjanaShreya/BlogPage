@@ -99,8 +99,21 @@ const BlogForm = () => {
     }
   };
 
-  const handleGoToDashboard = () => {
-    navigate("/"); 
+  const handleGoToDashboard = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/auth/signout", {
+        method: "POST",
+        credentials: 'include', // Necessary for cookies
+      });
+
+      if (response.ok) {
+        navigate("/"); // Redirect to home page after sign out
+      } else {
+        console.error("Sign out failed");
+      }
+    } catch (error) {
+      console.error("Error during sign out:", error);
+    }
   };
 
   return (

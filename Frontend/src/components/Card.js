@@ -79,12 +79,15 @@ const Card = ({ searchQuery, limit }) => {
                 )}
               </div>
 
-              <p
-                className="text-blue-500 font-semibold underline cursor-pointer hover:text-teal-800"
-                onClick={() => navigate(`/blog/${blog._id}`)}
-              >
-                Start reading
-              </p>
+              <div className="flex justify-end mt-1">
+                <p
+                  className="text-blue-500 font-semibold underline cursor-pointer hover:text-teal-800"
+                  onClick={() => navigate(`/blog/${blog._id}`)}
+                >
+                  Start reading
+                </p>
+                
+              </div>
             </div>
           );
         })

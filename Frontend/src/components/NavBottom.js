@@ -10,7 +10,7 @@ const NavBottom = ({ title, category, date }) => {
       <div className="absolute inset-0 bg-black bg-opacity-50">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full px-4 ml-28">
           <p className="text-white text-3xl font-bold">{title}</p>
-          <p className="text-white text-l font-bold mt-2">{category} • <span className="text-sm">{date}</span></p>
+          <p className="text-white text-l font-bold mt-2">{category} • <span className="text-sm">{new Date(date).toLocaleDateString('en-GB')}</span></p>
         </div>
       </div>
     </div>

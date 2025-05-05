@@ -4,61 +4,91 @@ import { useNavigate, Link } from "react-router-dom";
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate(); 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Email:", email, "Password:", password);
-    navigate("/adminpage");
-  };
+    setIsLoading(true);
+    setError("");
+  
+    try {
+      // Use the admin-specific endpoint
+      const response = await fetch("http://localhost:5000/auth/admin/signin", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Admin login failed");
+      }
+  
+      // Store admin status in session
+      sessionStorage.setItem("isAdmin", "true");
+      sessionStorage.setItem("adminToken", data.token);
+      navigate("/adminpage");
+  
+    } catch (error) {
+      setError(error.message === "Failed to fetch" 
+        ? "Cannot connect to server. Please try again later." 
+        : error.message);
+      console.error("Admin login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-96 border border-gray-200">
         <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-          Admin Login
+          Admin Portal
         </h2>
 
+        {error && (
+          <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded text-center">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
-          {/* Email Input */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">Admin Email</label>
             <input
               type="email"
               className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#002a32d5] focus:border-[#002a32d5]"
-              placeholder="Enter your email"
+              placeholder="admin@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
-          {/* Password Input */}
-          <div>
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <input
               type="password"
               className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#002a32d5] focus:border-[#002a32d5]"
-              placeholder="Enter your password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
 
-          {/* Forgot Password - Centered */}
-          <div className="mb-4 text-center">
-            <Link to='/' className="text-[#002a32d5] hover:underline text-sm">
-              Forgot Password?
-            </Link>
-          </div>
-
-          {/* Login Button */}
           <button
             type="submit"
-            className="w-full bg-[#002a32d5] text-white py-2 rounded-lg hover:bg-[#002a32] transition duration-300"
+            disabled={isLoading}
+            className="w-full bg-[#002a32d5] text-white py-2 rounded-lg hover:bg-[#002a32] transition duration-300 disabled:opacity-50"
           >
-            Login
+            {isLoading ? "Authenticating..." : "Login as Admin"}
           </button>
         </form>
       </div>
