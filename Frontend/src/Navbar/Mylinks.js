@@ -29,9 +29,9 @@ export const links = [
         {
           // Head: "Topwear",
           sublink: [
-            { name: "Moot Courts", link: "/" },
+            { name: "Moot Courts", link: "/mootcourts" },
             { name: "Panel Discussions", link: "/" },
-            { name: "Summer and Winter Programs", link: "/" },
+            { name: "Summer and Winter Programs", link: "/programssw" },
             { name: "Book Reviews", link: "/" },
             { name: "Opinions", link: "/" },
           ],

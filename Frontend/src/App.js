@@ -14,6 +14,9 @@ import HumanRights from './Pages/HumanRights';
 import LawofTorts from './Pages/LawofTorts';
 import AllBlogs from './Pages/AllBlogs';
 import OtherCategories from './Pages/OtherCategories';
+import ApproveBlogs from './AdminPages/ApproveBlogs';
+import MootCourts from './Pages/MootCourts';
+import ProgramsSW from './Pages/ProgramsSW';
 
 function App() {
   return (
@@ -30,11 +33,15 @@ function App() {
           <Route path='/humanrights' element={<HumanRights />} />
           <Route path='/lawoftorts' element={<LawofTorts />} />
           <Route path='/othercategories' element={<OtherCategories />} />
+          <Route path='/mootcourts' element={<MootCourts />} />
+          <Route path='/programssw' element={<ProgramsSW />} />
+          
           {/* Admin Routes */}
-          <Route path='/adminlogin' element={<AdminLogin /> } />
-          <Route path='/adminpage' element={<AdminPage/>} />
-          <Route path="/mootcourt" element={<MootCourt />} />
-          <Route path="/swprograms" element={<SWPrograms />} />
+          <Route path='/admin/login' element={<AdminLogin /> } />
+          <Route path='/admin/dashboard' element={<AdminPage/>} />
+          <Route path="/admin/mootcourt" element={<MootCourt />} />
+          <Route path="/admin/swprograms" element={<SWPrograms />} />
+          <Route path="/admin/approveblogs" element={<ApproveBlogs />} />
         </Routes>
       </div>
     </Router>

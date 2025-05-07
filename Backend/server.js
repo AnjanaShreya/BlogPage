@@ -1,55 +1,58 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
-const blogRoutes = require("./Routes/blogRoutes");
-const authRoutes = require("./Routes/authRoutes");
+const authRoutes = require('./Routes/authRoutes');
+const blogRoutes = require('./Routes/blogRoutes');
+const mootCourtRoutes = require('./Routes/mootCourtRoutes');
+const programRoutes = require('./Routes/programRoutes');
 
 const app = express();
 
-// Enhanced CORS configuration
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// Database connection - Updated for MongoDB driver v4+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1); // Exit if DB connection fails
+  });
 
 // Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Database connection with modern options
-mongoose
-  .connect(process.env.MONGO_URI || process.env.MONGO_ATLAS, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("✅ Connected to MongoDB Atlas"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
-
 // Routes
-app.use("/api", blogRoutes);
-app.use("/auth", authRoutes);
+app.use('/auth', authRoutes); // User and Admin Login
+app.use('/api/', blogRoutes); // Blog routes ...api/blogs/ whatever
+app.use('/api/moot-courts', mootCourtRoutes); 
+app.use('/api/programs', programRoutes);
 
 // Health check endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "healthy" });
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK',
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+  });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error("🚨 Error:", err.stack);
-  res.status(500).json({ message: "Internal Server Error" });
+  console.error('🚨 Error:', err.stack);
+  res.status(500).json({ 
+    success: false,
+    message: 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
-// Port setup
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`⚙️ Environment: ${process.env.NODE_ENV || 'development'}`);
 });

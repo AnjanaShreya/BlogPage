@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -33,7 +33,7 @@ const AdminLogin = () => {
       // Store admin status in session
       sessionStorage.setItem("isAdmin", "true");
       sessionStorage.setItem("adminToken", data.token);
-      navigate("/adminpage");
+      navigate("/admin/dashboard");
   
     } catch (error) {
       setError(error.message === "Failed to fetch" 
