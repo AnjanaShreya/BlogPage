@@ -11,9 +11,9 @@ const Card = ({ searchQuery, limit }) => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs");
-        // Sort blogs by newest first
-        const sortedBlogs = response.data.sort(
+        const response = await axios.get("http://localhost:5000/api/blogs/approved");
+
+        const sortedBlogs = response.data.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
         setBlogData(sortedBlogs);

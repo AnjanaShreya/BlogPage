@@ -17,6 +17,12 @@ import OtherCategories from './Pages/OtherCategories';
 import ApproveBlogs from './AdminPages/ApproveBlogs';
 import MootCourts from './Pages/MootCourts';
 import ProgramsSW from './Pages/ProgramsSW';
+import ConstitutionofIndia from './Pages/ConstitutionofIndia';
+import Civilprocedure from './Pages/Civilprocedure';
+import AdministrativeLaw from './Pages/AdministrativeLaw';
+import LawofContracts from './Pages/LawofContracts';
+import Bnss from './Pages/Bnss';
+import ConstitutionLaws from './Pages/ConstitutionLaws';
 
 function App() {
   return (
@@ -28,11 +34,19 @@ function App() {
           <Route path='/blogform' element={<BlogForm />} />
           <Route path='/blog/:id' element={<BlogDetails />} />
           <Route path='/allblogs' element={<AllBlogs />} />
+
           <Route path='/evidenceact' element={<EvidenceAct />} />
           <Route path='/electionlaws' element={<ElectionLaws />} />
           <Route path='/humanrights' element={<HumanRights />} />
           <Route path='/lawoftorts' element={<LawofTorts />} />
+          <Route path='/constitutionofindia' element={<ConstitutionofIndia />} />
+          <Route path='/civilprocedure' element={<Civilprocedure />} />
+          <Route path='/administrativelaw' element={<AdministrativeLaw />} />
+          <Route path='/lawofcontracts' element={<LawofContracts />} />
+          <Route path='/bnss' element={<Bnss />} />
+          <Route path='/constitutionlaw' element={<ConstitutionLaws />} />
           <Route path='/othercategories' element={<OtherCategories />} />
+
           <Route path='/mootcourts' element={<MootCourts />} />
           <Route path='/programssw' element={<ProgramsSW />} />
           

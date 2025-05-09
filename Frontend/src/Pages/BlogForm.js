@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import img2 from "../assets/img2.jpg";
 import Preview from "../components/Preview";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 const BlogForm = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -17,69 +17,98 @@ const BlogForm = () => {
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
-  // Handle input changes for form fields
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
   };
 
-  // Handle the category change
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
   };
 
-  // Handle the blog content change
   const handleBlogChange = (e) => {
     setBlogContent(e.target.value);
   };
 
-  // Handle preview
   const handlePreview = (e) => {
     e.preventDefault();
     setIsPreviewOpen(true);
   };
 
-  // Close preview
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
   };
 
-  // Handle form submission
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  
+  //   const formPayload = {
+  //     ...formData,
+  //     category: selectedCategory === "Other Category" ? otherCategory : selectedCategory,
+  //     blogContent: blogContent,
+  //   };
+  
+  //   try {
+  //     const response = await fetch("http://localhost:5000/api/submit", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       credentials: 'include', // Important for sending cookies
+  //       body: JSON.stringify(formPayload),
+  //     });
+  
+  //     const data = await response.json();
+  
+  //     if (response.ok) {
+  //       alert("Your blog has been submitted for approval! You'll receive a confirmation email shortly.");
+  //       // Reset form
+  //       setFormData({
+  //         name: "",
+  //         university: "",
+  //         degree: "",
+  //         year: "",
+  //         shortBio: "",
+  //         heading: "",
+  //       });
+  //       setSelectedCategory("");
+  //       setOtherCategory("");
+  //       setBlogContent("");
+  //     } else {
+  //       throw new Error(data.message || "Failed to submit blog");
+  //     }
+  //   } catch (error) {
+  //     console.error("Submission error:", error);
+  //     alert(error.message || "An error occurred. Please try again.");
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     const formPayload = {
-      name: formData.name,
-      university: formData.university,
-      degree: formData.degree,
-      year: formData.year,
-      shortBio: formData.shortBio,
+      ...formData,
       category: selectedCategory === "Other Category" ? otherCategory : selectedCategory,
       blogContent: blogContent,
-      heading: formData.heading, 
     };
-
-    // console.log('data:', formData.heading);
-    
-
+  
     try {
       const response = await fetch("http://localhost:5000/api/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify(formPayload),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
-        alert("Your blog has been submitted successfully!");
-        // console.log("Blog submitted:", data);
-        
-        // Reset the form
+        alert("Your blog has been submitted for approval! You'll receive a confirmation email shortly.");
+        // Reset form
         setFormData({
           name: "",
           university: "",
@@ -92,10 +121,11 @@ const BlogForm = () => {
         setOtherCategory("");
         setBlogContent("");
       } else {
-        console.error("Error:", data.message);
+        throw new Error(data.message || "Failed to submit blog");
       }
     } catch (error) {
-      console.error("Error submitting the blog:", error);
+      console.error("Submission error:", error);
+      alert(error.message || "An error occurred. Please try again.");
     }
   };
 
@@ -103,11 +133,11 @@ const BlogForm = () => {
     try {
       const response = await fetch("http://localhost:5000/auth/signout", {
         method: "POST",
-        credentials: 'include', // Necessary for cookies
+        credentials: 'include',
       });
 
       if (response.ok) {
-        navigate("/"); // Redirect to home page after sign out
+        navigate("/");
       } else {
         console.error("Sign out failed");
       }
@@ -126,18 +156,12 @@ const BlogForm = () => {
               Submit Your Blog
             </h2>
 
-            {/* more changes to make */}
             <button
               onClick={handleGoToDashboard}
               className="bg-teal-500 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-600"
             >
-            Go to Dashboard
+              Go to Dashboard
             </button>
-
-            <h3 className="text-white text-xl font-bold">Guidelines:</h3>
-            <h3 className="text-white">
-              To display an input field for "Other Category" when "Other Category" is selected, we can use React's useState to track the selected value and conditionally render the additional input field. Here's the updated code:
-            </h3>
 
             <div>
               <label htmlFor="name" className="block text-white font-medium mb-1">
@@ -224,9 +248,7 @@ const BlogForm = () => {
                 required
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
               >
-                <option value="" disabled>
-                  Select category...
-                </option>
+                <option value="" disabled>Select category...</option>
                 <option value="Constitution law">Constitution law</option>
                 <option value="Constitution of India">Constitution of India</option>
                 <option value="The Code of Civil Procedure 1908">
@@ -245,10 +267,7 @@ const BlogForm = () => {
 
             {selectedCategory === "Other Category" && (
               <div>
-                <label
-                  htmlFor="otherCategory"
-                  className="block text-white font-medium mb-1"
-                >
+                <label htmlFor="otherCategory" className="block text-white font-medium mb-1">
                   Specify Category Name: <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -264,7 +283,7 @@ const BlogForm = () => {
             )}
 
             <div>
-              <label htmlFor="name" className="block text-white font-medium mb-1">
+              <label htmlFor="heading" className="block text-white font-medium mb-1">
                 Heading: <span className="text-red-500">*</span>
               </label>
               <input
@@ -279,10 +298,7 @@ const BlogForm = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="blog"
-                className="block text-white font-medium mb-1"
-              >
+              <label htmlFor="blog" className="block text-white font-medium mb-1">
                 Write Your Blog: <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -321,7 +337,7 @@ const BlogForm = () => {
             />
           )}
         </div>
-      </div>      
+      </div>
     </div>
   );
 };

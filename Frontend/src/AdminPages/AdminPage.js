@@ -7,41 +7,47 @@ const AdminPage = () => {
   const navigate = useNavigate();
   const [upcomingPrograms, setUpcomingPrograms] = useState(0);
   const [upcomingMoots, setUpcomingMoots] = useState(0);
+  const [pendingBlogs, setPendingBlogs] = useState(0);
 
-    useEffect(() => {
-      const verifyAdmin = async () => {
-        try {
-          const response = await fetch('http://localhost:5000/auth/admin/dashboard', {
-            credentials: 'include',
-          });
-          if (!response.ok) throw new Error('Not authorized');
-        } catch {
-          sessionStorage.removeItem('isAdmin');
-          navigate('/admin/login');
-        }
-      };
-  
-      const fetchStats = async () => {
-        try {
-          const [programRes, mootRes] = await Promise.all([
-            fetch('http://localhost:5000/api/programs/count/upcoming'),
-            fetch('http://localhost:5000/api/moot-courts/count/upcoming')
-          ]);
+  useEffect(() => {
+    const verifyAdmin = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/auth/admin/dashboard', {
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Not authorized');
+      } catch {
+        sessionStorage.removeItem('isAdmin');
+        navigate('/admin/login');
+      }
+    };
+
+    // Update your fetchStats function
+    const fetchStats = async () => {
+      try {
+        const [programRes, mootRes, blogsRes] = await Promise.all([
+          fetch('http://localhost:5000/api/programs/count/upcoming'),
+          fetch('http://localhost:5000/api/moot-courts/count/upcoming'),
+          fetch('http://localhost:5000/api/blogs/count/pending', {
+            credentials: 'include' // Needed if using session cookies
+          })
+        ]);
       
-          const programData = await programRes.json();
-          const mootData = await mootRes.json();
+        const programData = await programRes.json();
+        const mootData = await mootRes.json();
+        const blogsData = await blogsRes.json();
       
-          setUpcomingPrograms(programData.count || 0);
-          setUpcomingMoots(mootData.count || 0);
-        } catch (err) {
-          console.error('Error fetching stats:', err);
-        }
-      };
-  
-      verifyAdmin();
-      fetchStats();
-    }, [navigate]);
-  
+        setUpcomingPrograms(programData.count || 0);
+        setUpcomingMoots(mootData.count || 0);
+        setPendingBlogs(blogsData.count || 0);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    };
+    
+        verifyAdmin();
+        fetchStats();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-gray-200">
@@ -67,7 +73,7 @@ const AdminPage = () => {
           {/* Blogs Card */}
           <div 
             className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 cursor-pointer group border border-gray-100"
-            onClick={() => navigate('/admin/blogs')}
+            onClick={() => navigate('/admin/approveblogs')}
           >
             <div className="flex justify-between items-center">
               <div>
@@ -119,7 +125,7 @@ const AdminPage = () => {
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-amber-50 p-4 rounded-lg text-center">
               <p className="text-sm text-gray-600">Pending Blogs</p>
-              <p className="text-2xl font-bold text-[#002a32d5]">24</p>
+              <p className="text-2xl font-bold text-[#002a32d5]">{pendingBlogs}</p>
             </div>
             <div className="bg-amber-50 p-4 rounded-lg text-center">
               <p className="text-sm text-gray-600">Upcoming Programs</p>

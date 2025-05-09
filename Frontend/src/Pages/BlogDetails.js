@@ -13,7 +13,11 @@ const BlogDetails = () => {
     const fetchBlog = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/blogs/${id}`);
-        setBlog(response.data);
+        if (response.data.success) {
+          setBlog(response.data.data);
+        } else {
+          console.error(response.data.message);
+        }
       } catch (error) {
         console.error("Error fetching blog details", error);
       }

@@ -8,30 +8,32 @@ const authRoutes = require('./Routes/authRoutes');
 const blogRoutes = require('./Routes/blogRoutes');
 const mootCourtRoutes = require('./Routes/mootCourtRoutes');
 const programRoutes = require('./Routes/programRoutes');
+const emailRoutes = require('./Routes/emailRoutes');
 
 const app = express();
 
-// Database connection - Updated for MongoDB driver v4+
+// Database connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected successfully'))
   .catch(err => {
     console.error('❌ MongoDB connection error:', err);
-    process.exit(1); // Exit if DB connection fails
+    process.exit(1);
   });
 
 // Middleware
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
 
 // Routes
-app.use('/auth', authRoutes); // User and Admin Login
-app.use('/api/', blogRoutes); // Blog routes ...api/blogs/ whatever
-app.use('/api/moot-courts', mootCourtRoutes); 
+app.use('/auth', authRoutes);
+app.use('/api', blogRoutes);
+app.use('/api/moot-courts', mootCourtRoutes);
 app.use('/api/programs', programRoutes);
+app.use('/api/email', emailRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
