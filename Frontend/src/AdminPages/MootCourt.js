@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminTopbar from './AdminTopbar';
+import AdminTopbar from './AdminComponents/AdminTopbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faPlus, faTimes, faCalendarAlt, faMapMarkerAlt, faUsers } from '@fortawesome/free-solid-svg-icons';
 

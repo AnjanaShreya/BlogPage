@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import img2 from "../assets/img2.jpg";
 import Preview from "../components/Preview";
 import { useNavigate } from "react-router-dom";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const BlogForm = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -28,8 +30,8 @@ const BlogForm = () => {
     setSelectedCategory(e.target.value);
   };
 
-  const handleBlogChange = (e) => {
-    setBlogContent(e.target.value);
+  const handleBlogChange = (content) => {
+    setBlogContent(content);
   };
 
   const handlePreview = (e) => {
@@ -40,50 +42,6 @@ const BlogForm = () => {
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  
-  //   const formPayload = {
-  //     ...formData,
-  //     category: selectedCategory === "Other Category" ? otherCategory : selectedCategory,
-  //     blogContent: blogContent,
-  //   };
-  
-  //   try {
-  //     const response = await fetch("http://localhost:5000/api/submit", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       credentials: 'include', // Important for sending cookies
-  //       body: JSON.stringify(formPayload),
-  //     });
-  
-  //     const data = await response.json();
-  
-  //     if (response.ok) {
-  //       alert("Your blog has been submitted for approval! You'll receive a confirmation email shortly.");
-  //       // Reset form
-  //       setFormData({
-  //         name: "",
-  //         university: "",
-  //         degree: "",
-  //         year: "",
-  //         shortBio: "",
-  //         heading: "",
-  //       });
-  //       setSelectedCategory("");
-  //       setOtherCategory("");
-  //       setBlogContent("");
-  //     } else {
-  //       throw new Error(data.message || "Failed to submit blog");
-  //     }
-  //   } catch (error) {
-  //     console.error("Submission error:", error);
-  //     alert(error.message || "An error occurred. Please try again.");
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -146,10 +104,29 @@ const BlogForm = () => {
     }
   };
 
+  // Quill editor modules configuration
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link'],
+      ['clean']
+    ],
+  };
+
+  // Quill editor formats configuration
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'link'
+  ];
+
   return (
     <div className="w-full">
       <div className="min-h-screen flex justify-center items-center bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${img2})` }}>
+        style={{ backgroundImage: `url(${img2})`,  backgroundAttachment: 'fixed' }}>
         <div className="bg-black bg-opacity-70 p-6 rounded-lg m-5 w-7/12">
           <form className="space-y-4" onSubmit={handleSubmit}>
             <h2 className="text-white text-2xl font-bold mb-4 text-center underline">
@@ -249,7 +226,6 @@ const BlogForm = () => {
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
               >
                 <option value="" disabled>Select category...</option>
-                <option value="Constitution law">Constitution law</option>
                 <option value="Constitution of India">Constitution of India</option>
                 <option value="The Code of Civil Procedure 1908">
                   The Code of Civil Procedure 1908
@@ -296,21 +272,21 @@ const BlogForm = () => {
                 className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300"
               />
             </div>
-
-            <div>
+            <div className="mb-6">
               <label htmlFor="blog" className="block text-white font-medium mb-1">
                 Write Your Blog: <span className="text-red-500">*</span>
               </label>
-              <textarea
-                id="blog"
-                placeholder="Write your blog here..."
-                value={blogContent}
-                onChange={handleBlogChange}
-                required
-                className="w-full bg-white bg-opacity-90 text-black p-3 rounded-md border border-gray-300 h-52 resize-none"
-              ></textarea>
-            </div>
-
+              <div className="bg-white bg-opacity-90 rounded-md h-72">
+                <ReactQuill
+                  value={blogContent}
+                  onChange={handleBlogChange}
+                  modules={modules}
+                  formats={formats}
+                  placeholder="Write your blog here..."
+                  className="text-black h-60"
+                />
+              </div>
+            </div>            
             <div className="flex justify-end">
               <button
                 onClick={handlePreview}

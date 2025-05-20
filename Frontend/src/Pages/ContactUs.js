@@ -1,7 +1,7 @@
 import React from "react";
 import Navbar from "../Navbar/Navbar";
 import Footer from "../Navbar/Footer";
-import NavBottom from "../components/NavBottom";
+import CategoryHeading from "../components/CategoryHeading";
 
 const ContactUs = () => {
   return (
@@ -11,7 +11,7 @@ const ContactUs = () => {
         <Navbar />
       </div>
 
-      <NavBottom title="Contact Us" />
+      <CategoryHeading title="Contact Us" />
 
       {/* Main Content */}
       <div className="mx-6 px-4 py-12"> 

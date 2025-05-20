@@ -40,8 +40,8 @@ const BlogDetails = () => {
       </div>
       <NavBottom title={blog.heading} category={blog.category} date={new Date(blog.createdAt).toLocaleDateString()} />
   
-      <div className="bg-gray-100 py-12 flex-grow">
-        <div className="text-center flex justify-start ml-16">
+      <div className="bg-gray-100 py-8 flex-grow">
+        <div className="text-center flex justify-start ml-12 mb-4">
           <button
             className="px-6 py-3 bg-[#002a32] text-white font-semibold rounded-full shadow-lg hover:bg-[#001a1f] transition duration-300"
             onClick={() => window.history.back()}
@@ -50,7 +50,7 @@ const BlogDetails = () => {
           </button>
         </div>
         
-        <div className="max-w-5xl mx-auto p-8 rounded-lg border">
+        <div className="max-w-6xl mx-auto p-8 rounded-lg border">
           {/* Author Info */}
           <div className="mb-8">
             <p className="text-gray-900 font-semibold text-xl mb-4">
@@ -72,9 +72,10 @@ const BlogDetails = () => {
           {/* Full Blog Content */}
           <div className="mt-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Read the Blog</h2>
-            <p className="text-gray-700 text-base leading-relaxed whitespace-pre-wrap">
-              {blog.blogContent}
-            </p>
+            <div
+              className="text-gray-700 text-base leading-relaxed prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ __html: blog.blogContent }}
+            ></div>
           </div>
         </div>
       </div>

@@ -45,6 +45,16 @@ const AdminTopbar = () => {
               Blog Approvals
             </Link>
             <Link 
+              to="/admin/reviewblogs"
+              className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${
+                location.pathname === '/admin/reviewblogs' 
+                  ? 'bg-white text-[#002a32d5]' 
+                  : 'text-white hover:bg-[#002a32]'
+              }`}
+            >
+              Blog Reviews
+            </Link>
+            <Link 
               to="/admin/swprograms"
               className={`px-4 py-2 rounded-lg transition-colors duration-200 font-medium ${
                 location.pathname === '/admin/swprograms' 

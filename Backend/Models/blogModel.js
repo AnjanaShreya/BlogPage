@@ -17,8 +17,13 @@ const blogSchema = new mongoose.Schema(
     heading: { type: String, required: true },
     status: { 
       type: String, 
-      enum: ['pending', 'approved', 'rejected'],
+      enum: ['pending', 'approved', 'rejected', 'needs-revision'],
       default: 'pending'
+    },
+    reviewComments: String,
+    revisionCount: {
+      type: Number,
+      default: 0
     },
     approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     rejectionReason: { type: String }

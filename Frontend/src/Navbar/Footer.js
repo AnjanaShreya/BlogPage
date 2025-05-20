@@ -32,7 +32,7 @@ const Footer = () => {
         </div>
         <div className='text-gray-200'>
             <p className='text-2xl font-semibold underline leading-loose text-white'>Address</p>
-            <p>Mahindra University, <br/> Bahaduepally, Jeedimetla, <br /> Hyderabad, Tealngana, India - 500043</p>
+            <p>Mahindra University, <br/> Bahadurpally, Jeedimetla, <br /> Hyderabad, Tealngana, India - 500043</p>
         </div>
       </div>
       <div className='  bg-[#d5be38] font-semibold text-gray-900 text-center p-2'>

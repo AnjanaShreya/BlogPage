@@ -2,6 +2,7 @@ import React from 'react';
 import './style.css'; 
 import anjana from '../assets/anjana.png';
 import vishal from '../assets/vishal.png';
+import mandeep from "../assets/Mandeep.png" 
 import { Link } from "react-router-dom";
 
 const ProfileCard = () => {
@@ -16,13 +17,13 @@ const ProfileCard = () => {
             <div className="container-outer">
               <div className="container-inner">
                 <div className="circle">
-                  <img className="img" src={anjana} alt="Profile" />
+                  <img className="img" src={mandeep} alt="Profile" />
                 </div>
               </div>
             </div>
             <div className="divider"></div>
-            <div className="name">Anjana Shreya</div>
-            <div className="title">Developer |{" "}
+            <div className="name">Mandeep Kaur</div>
+            <div className="title text-center">Associate Professor of Law <br />
               <Link to="" className="text-blue-600 hover:underline">
                 Read More
               </Link>
@@ -40,7 +41,7 @@ const ProfileCard = () => {
             </div>
             <div className="divider"></div>
             <div className="name">Vishal Chintala</div>
-            <div className="title">Student | {" "}
+            <div className="title text-center">Student <br />
               <Link to="" className="text-blue-600 hover:underline">
                 Read More
               </Link>
@@ -58,7 +59,7 @@ const ProfileCard = () => {
             </div>
             <div className="divider"></div>
             <div className="name">Anjana Shreya</div>  
-            <div className="title">Developer | {" "}
+            <div className="title text-center">Developer <br />
               <Link to="" className="text-blue-600 hover:underline">
                 Read More
               </Link>

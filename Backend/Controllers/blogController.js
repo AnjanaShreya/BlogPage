@@ -12,7 +12,8 @@ const transporter = nodemailer.createTransport({
     user: process.env.YAHOO_EMAIL,
     pass: process.env.YAHOO_APP_PASSWORD
   },
-  debug: true // This will show detailed logs
+  debug: true, // This will show detailed logs
+  logger: true // This will log the SMTP connection
 });
 
 // Controller to fetch all blogs
@@ -26,43 +27,6 @@ const getBlogs = async (req, res) => {
   }
 };
 
-// const getBlogById = async (req, res) => {
-//   try {
-//     // Validate the ID format first
-//     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-//       return res.status(400).json({ 
-//         success: false,
-//         message: "Invalid blog ID format",
-//         error: `Expected 24-character hex string, got ${req.params.id}`
-//       });
-//     }
-
-//     const blog = await Blog.findOne({ 
-//       _id: req.params.id,
-//       status: 'approved' // Only find approved blogs
-//     });
-    
-//     if (!blog) {
-//       return res.status(404).json({ 
-//         success: false,
-//         message: "Blog not found or not approved" 
-//       });
-//     }
-    
-//     res.status(200).json({
-//       success: true,
-//       data: blog
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ 
-//       success: false,
-//       message: "Error fetching blog.",
-//       error: error.message 
-//     });
-//   }
-// };
-
 const getBlogById = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -74,8 +38,8 @@ const getBlogById = async (req, res) => {
 
     const blog = await Blog.findOne({ 
       _id: req.params.id,
-      status: 'approved'
-    }).populate('author', 'email'); // Populate author's email
+      status: { $in: ['approved', 'needs-revision'] }
+    }).populate('author', 'email'); 
     
     if (!blog) {
       return res.status(404).json({ 
@@ -342,6 +306,199 @@ const countPendingBlogs = async (req, res) => {
   }
 };
 
+const requestRevision = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminId, reviewComments } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid blog ID format"
+      });
+    }
+
+    const blog = await Blog.findByIdAndUpdate(
+      id,
+      { 
+        status: 'needs-revision', // This is the key change
+        approvedBy: adminId,
+        reviewComments,
+        $inc: { revisionCount: 1 }
+      },
+      { new: true }
+    ).populate('author', 'email name');
+
+    if (!blog) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Blog not found" 
+      });
+    }
+
+    // Send email to author
+    try {
+      const mailOptions = {
+        from: `Blog Platform <${process.env.YAHOO_EMAIL}>`,
+        to: blog.author.email,
+        subject: `Revision Request for Your Blog: ${blog.heading}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #2d3748;">Hello ${blog.author.name || 'there'},</h2>
+            <p>Your blog titled <strong>"${blog.heading}"</strong> requires revisions before it can be approved.</p>
+            
+            <div style="background-color: #f8fafc; border-left: 4px solid #f59e0b; padding: 12px; margin: 15px 0;">
+              <h3 style="color: #d97706; margin-top: 0;">Review Comments:</h3>
+              <p style="white-space: pre-wrap;">${reviewComments}</p>
+            </div>
+            
+            <p>Please make the requested changes and resubmit your blog for review.</p>
+            
+            <div style="margin: 20px 0; text-align: center;">
+              <a href="http://localhost:3000/reviewsubmission/${blog._id}" 
+                style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                Edit and Resubmit Your Blog
+              </a>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+              <p>Best regards,</p>
+              <p>The Blog Team</p>
+            </div>
+          </div>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (emailError) {
+      console.error('Failed to send revision email:', emailError);
+    }
+
+    res.status(200).json({ 
+      success: true,
+      message: "Revision requested successfully", 
+      data: blog 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      success: false,
+      message: "Error requesting revision",
+      error: error.message
+    });
+  }
+};
+
+// Count pending blogs
+const countReviewBlogs = async (req, res) => {
+  try {
+    const count = await Blog.countDocuments({ status: 'needs-revision' });
+    res.status(200).json({ 
+      success: true,
+      count 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      success: false,
+      message: "Error counting pending blogs",
+      error: error.message
+    });
+  }
+};
+
+// const getReviewBlogs = async (req, res) => {
+//   try {
+//     const blogs = await Blog.find({ status: 'needs-revision' })
+//       // .populate('author', 'name email')
+//       // .populate('approvedBy', 'name email')
+//       // .sort({ updatedAt: -1 });
+
+//     res.status(200).json({ 
+//       success: true,
+//       data: blogs 
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ 
+//       success: false,
+//       message: "Error fetching blogs needing revision",
+//       error: error.message
+//     });
+//   }
+// };
+
+// Controller to fetch all blogs
+const getReviewBlogs = async (req, res) => {
+  try {
+    const blogs = await Blog.find({ status: "needs-revision" });
+
+    res.status(200).json({
+      success: true,
+      data: blogs,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Error while fetching blogs needing revision.",
+      error: error.message,
+    });
+  }
+};
+
+const resubmitBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, university, degree, year, shortBio, category, blogContent, heading } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid blog ID format"
+      });
+    }
+
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      id,
+      {
+        name,
+        university,
+        degree,
+        year,
+        shortBio,
+        category,
+        blogContent,
+        heading,
+        status: 'needs-revision', // Keep status as needs-revision
+        lastSubmitted: new Date(),
+        $inc: { revisionCount: 1 }
+      },
+      { new: true }
+    ).populate('author', 'email name');
+
+    if (!updatedBlog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found"
+      });
+    }
+
+    res.status(200).json({ 
+      success: true,
+      message: "Blog updated successfully",
+      data: updatedBlog 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      success: false,
+      message: "Error updating blog",
+      error: error.message
+    });
+  }
+};
+
 module.exports = { 
   getBlogs, 
   getBlogById, 
@@ -350,5 +507,9 @@ module.exports = {
   approveBlog, 
   rejectBlog, 
   getApprovedBlogs,
-  countPendingBlogs
+  countPendingBlogs,
+  requestRevision,
+  countReviewBlogs,
+  resubmitBlog,
+  getReviewBlogs
 };

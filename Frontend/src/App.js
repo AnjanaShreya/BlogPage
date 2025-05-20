@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Dashboard from './Pages/Dashboard';
 import BlogForm from './Pages/BlogForm';
 import ContactUs from './Pages/ContactUs';
@@ -22,19 +22,56 @@ import Civilprocedure from './Pages/Civilprocedure';
 import AdministrativeLaw from './Pages/AdministrativeLaw';
 import LawofContracts from './Pages/LawofContracts';
 import Bnss from './Pages/Bnss';
-import ConstitutionLaws from './Pages/ConstitutionLaws';
+import React, { useEffect } from 'react';
+import BlogReviews from './AdminPages/BlogReviews';
+import ReviewSubmission from './AdminPages/ReviewSubmission';
+
+const CopyPasteRestriction = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+
+    const isExempt =
+      path === '/blogform' ||
+      path === '/contactus' ||
+      path.startsWith('/admin') ||
+      path.startsWith('/reviewsubmission');
+
+    if (!isExempt) {
+      const disableCopy = (e) => {
+        e.preventDefault();
+        alert('Copying content is disabled on this page.');
+      };
+
+      document.addEventListener('copy', disableCopy);
+      document.addEventListener('cut', disableCopy);
+      document.addEventListener('paste', disableCopy);
+
+      return () => {
+        document.removeEventListener('copy', disableCopy);
+        document.removeEventListener('cut', disableCopy);
+        document.removeEventListener('paste', disableCopy);
+      };
+    }
+  }, [location.pathname]);
+
+  return null;
+};
 
 function App() {
   return (
     <Router>
       <div className="App">
+        {/* Add the CopyPasteRestriction component */}
+        <CopyPasteRestriction />
+        
         <Routes>
-          <Route path="/" element={<Dashboard />} /> 
+          <Route path="/" element={<Dashboard />} />
           <Route path='/contactus' element={<ContactUs />} />
           <Route path='/blogform' element={<BlogForm />} />
           <Route path='/blog/:id' element={<BlogDetails />} />
           <Route path='/allblogs' element={<AllBlogs />} />
-
           <Route path='/evidenceact' element={<EvidenceAct />} />
           <Route path='/electionlaws' element={<ElectionLaws />} />
           <Route path='/humanrights' element={<HumanRights />} />
@@ -44,18 +81,20 @@ function App() {
           <Route path='/administrativelaw' element={<AdministrativeLaw />} />
           <Route path='/lawofcontracts' element={<LawofContracts />} />
           <Route path='/bnss' element={<Bnss />} />
-          <Route path='/constitutionlaw' element={<ConstitutionLaws />} />
           <Route path='/othercategories' element={<OtherCategories />} />
-
           <Route path='/mootcourts' element={<MootCourts />} />
           <Route path='/programssw' element={<ProgramsSW />} />
           
           {/* Admin Routes */}
-          <Route path='/admin/login' element={<AdminLogin /> } />
+          <Route path='/admin/login' element={<AdminLogin />} />
           <Route path='/admin/dashboard' element={<AdminPage/>} />
           <Route path="/admin/mootcourt" element={<MootCourt />} />
           <Route path="/admin/swprograms" element={<SWPrograms />} />
           <Route path="/admin/approveblogs" element={<ApproveBlogs />} />
+          <Route path="/admin/reviewblogs" element={<BlogReviews />} />
+
+          <Route path="/reviewsubmission/:id" element={<ReviewSubmission />} />
+          
         </Routes>
       </div>
     </Router>

@@ -6,7 +6,6 @@ export const links = [
         {
           // Head: "Topwear",
           sublink: [
-            { name: "Constitution Law", link: "/constitutionlaw" },
             { name: "Constitution of India", link: "/constitutionofindia" },
             { name: "Civil Procedure 1908", link: "/civilprocedure" }, 
             { name: "Administrative Law", link: "/administrativelaw" },
@@ -36,16 +35,6 @@ export const links = [
             { name: "Opinions", link: "/" },
           ],
         },
-        // {
-        //   // Head: "Bottomwear",
-        //   sublink: [
-        //     { name: "T-shirt", link: "/" },
-        //     { name: "Casual shirts", link: "/" },
-        //     { name: "formal shirts", link: "/" },
-        //     { name: "formal shirts", link: "/" },
-        //     { name: "formal shirts", link: "/" },
-        //   ],
-        // },
       ],
     },
   ];

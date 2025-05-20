@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowRight } from 'react-icons/fa';
-import AdminTopbar from './AdminTopbar';
+import AdminTopbar from './AdminComponents/AdminTopbar';
 
 const AdminPage = () => {
   const navigate = useNavigate();
   const [upcomingPrograms, setUpcomingPrograms] = useState(0);
   const [upcomingMoots, setUpcomingMoots] = useState(0);
   const [pendingBlogs, setPendingBlogs] = useState(0);
+  const [pendingReviewBlogs, setPendingReviewBlogs] = useState(0);
 
   useEffect(() => {
     const verifyAdmin = async () => {
@@ -25,10 +26,13 @@ const AdminPage = () => {
     // Update your fetchStats function
     const fetchStats = async () => {
       try {
-        const [programRes, mootRes, blogsRes] = await Promise.all([
+        const [programRes, mootRes, blogsRes, reviewRes] = await Promise.all([
           fetch('http://localhost:5000/api/programs/count/upcoming'),
           fetch('http://localhost:5000/api/moot-courts/count/upcoming'),
           fetch('http://localhost:5000/api/blogs/count/pending', {
+            credentials: 'include' // Needed if using session cookies
+          }),
+          fetch('http://localhost:5000/api/blogs/count/review', {
             credentials: 'include' // Needed if using session cookies
           })
         ]);
@@ -36,10 +40,12 @@ const AdminPage = () => {
         const programData = await programRes.json();
         const mootData = await mootRes.json();
         const blogsData = await blogsRes.json();
+        const reviewData = await reviewRes.json();
       
         setUpcomingPrograms(programData.count || 0);
         setUpcomingMoots(mootData.count || 0);
         setPendingBlogs(blogsData.count || 0);
+        setPendingReviewBlogs(reviewData.count || 0);
       } catch (err) {
         console.error('Error fetching stats:', err);
       }
@@ -69,7 +75,7 @@ const AdminPage = () => {
         </div>
 
         {/* Control Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {/* Blogs Card */}
           <div 
             className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 cursor-pointer group border border-gray-100"
@@ -80,7 +86,21 @@ const AdminPage = () => {
                 <h3 className="text-xl font-semibold text-gray-800 group-hover:text-[#002a32d5] transition-colors duration-200">
                   Blogs To Be Approved
                 </h3>
-                <p className="text-gray-500 mt-1">Review and approve pending blog submissions</p>
+                <p className="text-gray-500 mt-1">Review and approval of first blog submissions</p>
+              </div>
+              <FaArrowRight className="text-2xl text-[#002a32d5] group-hover:translate-x-1 transition-transform duration-200" />
+            </div>
+          </div>
+          <div 
+            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300 cursor-pointer group border border-gray-100"
+            onClick={() => navigate('/admin/reviewblogs')}
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800 group-hover:text-[#002a32d5] transition-colors duration-200">
+                  Blogs Review Page
+                </h3>
+                <p className="text-gray-500 mt-1">Blogs submitted again based on feedback</p>
               </div>
               <FaArrowRight className="text-2xl text-[#002a32d5] group-hover:translate-x-1 transition-transform duration-200" />
             </div>
@@ -122,10 +142,14 @@ const AdminPage = () => {
         {/* Stats Section (Optional) */}
         <div className="mt-4 bg-white rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Quick Stats</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div className="bg-amber-50 p-4 rounded-lg text-center">
               <p className="text-sm text-gray-600">Pending Blogs</p>
               <p className="text-2xl font-bold text-[#002a32d5]">{pendingBlogs}</p>
+            </div>
+            <div className="bg-amber-50 p-4 rounded-lg text-center">
+              <p className="text-sm text-gray-600">Pending Review Blogs</p>
+              <p className="text-2xl font-bold text-[#002a32d5]">{pendingReviewBlogs}</p>
             </div>
             <div className="bg-amber-50 p-4 rounded-lg text-center">
               <p className="text-sm text-gray-600">Upcoming Programs</p>
