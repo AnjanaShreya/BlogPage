@@ -3,7 +3,6 @@ const User = require('../Models/User');
 
 const verifyToken = async (req, res, next) => {
   try {
-    // Get token from either cookies or Authorization header
     const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
@@ -13,11 +12,9 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Find user and attach to request
     const user = await User.findById(decoded.id).select('-password');
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -29,7 +26,7 @@ const verifyToken = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('JWT Verification Error:', error.message);
-    
+
     let message = 'Invalid token';
     if (error.name === 'TokenExpiredError') {
       message = 'Token expired';
@@ -46,7 +43,7 @@ const verifyToken = async (req, res, next) => {
 };
 
 const requireAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  if (req.user.role !== 'admin' && req.user.role !== 'subadmin') {
     return res.status(403).json({
       success: false,
       message: 'Admin privileges required'
@@ -55,7 +52,18 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+const requireSubadmin = (req, res, next) => {
+  if (req.user.role !== 'subadmin' && req.user.role !== 'admin') {
+    return res.status(403).json({ 
+      success: false,
+      message: 'Subadmin privileges required' 
+    });
+  }
+  next();
+};
+
 module.exports = {
   verifyToken,
-  requireAdmin
+  requireAdmin,
+  requireSubadmin
 };

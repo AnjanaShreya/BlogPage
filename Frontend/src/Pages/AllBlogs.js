@@ -18,8 +18,10 @@ const AllBlogs = () => {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs");
-        const sortedBlogs = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const response = await axios.get("http://localhost:5000/api/blogs/approved");
+        const sortedBlogs = response.data.data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
         setBlogData(sortedBlogs);
         setFilteredBlogs(sortedBlogs);
       } catch (error) {

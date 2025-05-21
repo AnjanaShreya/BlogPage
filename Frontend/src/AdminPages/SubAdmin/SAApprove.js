@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import AdminTopbar from "./AdminComponents/AdminTopbar";
 import { useNavigate } from "react-router-dom";
 import { FiLoader, FiAlertCircle, FiCheck } from "react-icons/fi";
-import BlogCard from "./AdminComponents/BlogCard";
-import BlogDetailModal from "./AdminComponents/BlogDetailModal";
+import BlogCard from "../AdminComponents/BlogCard";
+import BlogDetailModal from "../AdminComponents/BlogDetailModal";
+import AdminTopbar from "../AdminComponents/AdminTopbar";
 
-const ApproveBlogs = () => {
+const SAApprove = () => {
   const [blogs, setBlogs] = useState([]);
   const [selectedBlog, setSelectedBlog] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -16,12 +16,10 @@ const ApproveBlogs = () => {
   const [actionType, setActionType] = useState(null);
   const navigate = useNavigate();
 
-  const tabs = [
-    { label: 'Dashboard', path: '/admin/dashboard' },
-    { label: 'Blog Approvals', path: '/admin/approveblogs' },
-    { label: 'Blog Reviews', path: '/admin/reviewblogs' },
-    { label: 'SW Programs', path: '/admin/swprograms' },
-    { label: 'MootCourts', path: '/admin/mootcourt' }
+	const tabs = [
+    { label: 'Dashboard', path: '/admin/onlyblogreview' },
+    { label: 'First Submission', path: '/admin/subadminaprroval' },
+    { label: 'Blog Reviews', path: '/admin/subadminreviews' },
   ];
 
   useEffect(() => {
@@ -241,7 +239,7 @@ const ApproveBlogs = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AdminTopbar tabs={tabs} />
+				<AdminTopbar tabs={tabs} />
         <div className="flex items-center justify-center h-64">
           <FiLoader className="animate-spin text-4xl text-blue-500" />
           <span className="ml-3 text-xl">Loading pending blogs...</span>
@@ -253,7 +251,7 @@ const ApproveBlogs = () => {
   if (error) {
     return (
       <div className="h-screen bg-gradient-to-br from-amber-50 to-gray-200">
-        <AdminTopbar tabs={tabs} />
+				<AdminTopbar tabs={tabs} />
         <div className="flex items-center justify-center h-64">
           <FiAlertCircle className="text-4xl text-red-500" />
           <span className="ml-3 text-xl text-red-600">{error}</span>
@@ -264,10 +262,10 @@ const ApproveBlogs = () => {
   
   return (
     <div className="h-screen bg-gradient-to-br from-amber-50 to-gray-200">
-      <AdminTopbar tabs={tabs} />
+			<AdminTopbar tabs={tabs} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Pending Blogs for Approval</h1>
+          <h1 className="text-3xl font-bold text-gray-800">First Submission Approvals/Reviews</h1>
           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
             {blogs.length} pending
           </span>
@@ -302,7 +300,7 @@ const ApproveBlogs = () => {
             isProcessing={isProcessing}
             actionType={actionType}
             showReviewComments={true}
-            showApproveOptions={true}
+            showApproveOptions={false}
           />
         ))}
         </div>
@@ -328,4 +326,4 @@ const ApproveBlogs = () => {
   );
 };
 
-export default ApproveBlogs;
+export default SAApprove;

@@ -21,6 +21,14 @@ const MootCourt = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const tabs = [
+    { label: 'Dashboard', path: '/admin/dashboard' },
+    { label: 'Blog Approvals', path: '/admin/approveblogs' },
+    { label: 'Blog Reviews', path: '/admin/reviewblogs' },
+    { label: 'SW Programs', path: '/admin/swprograms' },
+    { label: 'MootCourts', path: '/admin/mootcourt' }
+  ];
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCurrentEvent(prev => ({ ...prev, [name]: value }));
@@ -172,7 +180,7 @@ const MootCourt = () => {
   if (isLoading) {
     return (
       <div className="bg-gradient-to-br from-amber-50 to-gray-200 min-h-screen">
-        <AdminTopbar />
+        <AdminTopbar tabs={tabs} />
         <div className="flex justify-center items-center h-screen">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
@@ -182,7 +190,7 @@ const MootCourt = () => {
 
   return (
     <div className='bg-gradient-to-br from-amber-50 to-gray-200 min-h-screen'>
-      <AdminTopbar />
+      <AdminTopbar tabs={tabs} />
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-8">

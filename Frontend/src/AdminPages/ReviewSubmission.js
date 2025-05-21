@@ -1,3 +1,4 @@
+// This page is for user to edit and resubmit their blog after review.
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FiLoader, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';

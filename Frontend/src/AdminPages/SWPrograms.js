@@ -17,6 +17,14 @@ const SWPrograms = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const tabs = [
+    { label: 'Dashboard', path: '/admin/dashboard' },
+    { label: 'Blog Approvals', path: '/admin/approveblogs' },
+    { label: 'Blog Reviews', path: '/admin/reviewblogs' },
+    { label: 'SW Programs', path: '/admin/swprograms' },
+    { label: 'MootCourts', path: '/admin/mootcourt' }
+  ];
+
   const getAuthToken = () => {
     return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken');
   };
@@ -174,7 +182,7 @@ const SWPrograms = () => {
 
   return (
     <div className='bg-gradient-to-br from-amber-50 to-gray-200 min-h-screen'>
-      <AdminTopbar />
+      <AdminTopbar tabs={tabs} />
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-8">

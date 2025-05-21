@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mootCourtController = require('../Controllers/mootCourtController');
-const { verifyToken, requireAdmin } = require('../middleware/authMiddleware');
+const { verifyToken, requireAdmin } = require('../Middleware/authMiddleware');
 
 // Public routes
 router.get('/', mootCourtController.getAllEvents);

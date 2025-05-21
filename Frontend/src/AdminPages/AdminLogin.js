@@ -14,7 +14,6 @@ const AdminLogin = () => {
     setError("");
   
     try {
-      // Use the admin-specific endpoint
       const response = await fetch("http://localhost:5000/auth/admin/signin", {
         method: "POST",
         credentials: "include",
@@ -27,19 +26,28 @@ const AdminLogin = () => {
       const data = await response.json();
   
       if (!response.ok) {
-        throw new Error(data.message || "Admin login failed");
+        throw new Error(data.message || "Login failed");
       }
   
-      // Store admin status in session
-      sessionStorage.setItem("isAdmin", "true");
+      // Store user info in session
+      sessionStorage.setItem("isAdmin", data.role === "admin");
+      sessionStorage.setItem("isSubadmin", data.role === "subadmin");
       sessionStorage.setItem("adminToken", data.token);
-      navigate("/admin/dashboard");
+      
+      // Redirect based on role
+      if (data.role === "admin") {
+        navigate("/admin/dashboard");
+      } else if (data.role === "subadmin") {
+        navigate("/admin/onlyblogreview");
+      } else {
+        throw new Error("Unauthorized access");
+      }
   
     } catch (error) {
       setError(error.message === "Failed to fetch" 
         ? "Cannot connect to server. Please try again later." 
         : error.message);
-      console.error("Admin login error:", error);
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +68,7 @@ const AdminLogin = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Admin Email</label>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
             <input
               type="email"
               className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#002a32d5] focus:border-[#002a32d5]"
@@ -88,7 +96,7 @@ const AdminLogin = () => {
             disabled={isLoading}
             className="w-full bg-[#002a32d5] text-white py-2 rounded-lg hover:bg-[#002a32] transition duration-300 disabled:opacity-50"
           >
-            {isLoading ? "Authenticating..." : "Login as Admin"}
+            {isLoading ? "Authenticating..." : "Login"}
           </button>
         </form>
       </div>

@@ -55,7 +55,7 @@ const Card = ({ searchQuery, limit }) => {
                   {blog.heading}
                 </h4>
                 <p className="text-sm text-gray-500 mt-1">
-                  {new Date(blog.createdAt).toLocaleDateString()} • {blog.category}
+                  {new Date(blog.createdAt).toLocaleDateString("en-GB")} • {blog.category}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
                   Written By: {blog.name}
@@ -74,7 +74,7 @@ const Card = ({ searchQuery, limit }) => {
                     className="text-blue-600 font-medium text-sm hover:underline mt-2 cursor-pointer hover:text-teal-800"
                     onClick={() => toggleExpand(blog._id)}
                   >
-                    {isExpanded ? "Read Less" : "Read More"}
+                    {isExpanded ? " Read Less" : " Read More"}
                   </span>
                 )}
               </div>

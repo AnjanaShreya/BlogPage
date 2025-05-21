@@ -5,7 +5,8 @@ const {
   adminSignin,
   signout, 
   verifyToken,
-  requireAdmin 
+  requireAdmin ,
+  requireSubadmin
 } = require("../Controllers/authController");
 
 const router = express.Router();
@@ -19,6 +20,17 @@ router.get("/admin/dashboard", verifyToken, requireAdmin, (req, res) => {
   res.json({ 
     message: "Welcome to admin dashboard",
     userId: req.userId
+  });
+});
+
+router.get("/admin/onlyblogreview", verifyToken, requireSubadmin, (req, res) => {
+  res.json({ 
+    success: true,
+    message: "Welcome to blog review dashboard",
+    user: {
+      id: req.userId,
+      role: req.userRole
+    }
   });
 });
 

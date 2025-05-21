@@ -4,15 +4,18 @@ another bg -> bg-[#b8870bd7]
 
 
 -- check for login in user side ....only allow user role to login
---review and revesion option
---admin2 only review option 
---offensive words checker
 --address and contacts
---mail the submitted draft back to the user also for easy reference
 --add toast notifications wherever needed
 --date handling - when event is over should automatically be gone or something like that
 
 --add sub admin for only reviews tasks...
--- add plagarism check, offensive words check, 
---comment out programs and moot courts
+--add plagarism check, offensive words check
+--comment out swprograms and moot courts 
 --add env in both frontend and backend
+--dashoboard contents also see what all to add
+
+--subadmin should get the pending blogs whithout aprrove button and review page also to review without approve button....
+he can neither approve nor reject the blogs 
+
+
+--checkk admin tokens everywhere

@@ -71,6 +71,37 @@ exports.signin = async (req, res) => {
 };
 
 // Admin-only signin endpoint
+// exports.adminSignin = async (req, res) => {
+//   const { email, password } = req.body;
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     // Verify password
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+
+//     // Verify admin role
+//     if (user.role !== 'admin') {
+//       return res.status(403).json({ message: "Admin access required" });
+//     }
+
+//     const token = jwt.sign({ 
+//       id: user._id,
+//       role: user.role
+//     }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    
+//     res.cookie('token', token, cookieOptions);
+//     res.status(200).json({ 
+//       message: "Admin logged in successfully",
+//       role: user.role,
+//       token
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: "Error in Admin Signin" });
+//   }
+// };
+
 exports.adminSignin = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -81,9 +112,9 @@ exports.adminSignin = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // Verify admin role
-    if (user.role !== 'admin') {
-      return res.status(403).json({ message: "Admin access required" });
+    // Verify admin or subadmin role
+    if (user.role !== 'admin' && user.role !== 'subadmin') {
+      return res.status(403).json({ message: "Admin or subadmin access required" });
     }
 
     const token = jwt.sign({ 
@@ -93,12 +124,12 @@ exports.adminSignin = async (req, res) => {
     
     res.cookie('token', token, cookieOptions);
     res.status(200).json({ 
-      message: "Admin logged in successfully",
+      message: "Logged in successfully",
       role: user.role,
       token
     });
   } catch (err) {
-    res.status(500).json({ message: "Error in Admin Signin" });
+    res.status(500).json({ message: "Error in Signin" });
   }
 };
 
@@ -122,8 +153,18 @@ exports.verifyToken = (req, res, next) => {
 
 // Admin-only middleware
 exports.requireAdmin = (req, res, next) => {
-  if (req.userRole !== 'admin') {
-    return res.status(403).json({ message: "Admin access required" });
+  if (req.userRole !== 'admin' && req.userRole !== 'subadmin') {
+    return res.status(403).json({ message: "Admin or subadmin access required" });
+  }
+  next();
+};
+
+exports.requireSubadmin = (req, res, next) => {
+  if (req.user.role !== 'subadmin' && req.user.role !== 'admin') {
+    return res.status(403).json({ 
+      success: false,
+      message: "Subadmin privileges required" 
+    });
   }
   next();
 };

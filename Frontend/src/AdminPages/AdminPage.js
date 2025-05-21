@@ -10,6 +10,14 @@ const AdminPage = () => {
   const [pendingBlogs, setPendingBlogs] = useState(0);
   const [pendingReviewBlogs, setPendingReviewBlogs] = useState(0);
 
+  const tabs = [
+    { label: 'Dashboard', path: '/admin/dashboard' },
+    { label: 'Blog Approvals', path: '/admin/approveblogs' },
+    { label: 'Blog Reviews', path: '/admin/reviewblogs' },
+    { label: 'SW Programs', path: '/admin/swprograms' },
+    { label: 'MootCourts', path: '/admin/mootcourt' }
+  ];
+
   useEffect(() => {
     const verifyAdmin = async () => {
       try {
@@ -57,7 +65,7 @@ const AdminPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-gray-200">
-      <AdminTopbar />
+      <AdminTopbar tabs={tabs} />
       
       <main className="container mx-auto p-6">
         {/* Main Admin Controls Section */}

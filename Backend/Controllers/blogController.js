@@ -407,27 +407,6 @@ const countReviewBlogs = async (req, res) => {
   }
 };
 
-// const getReviewBlogs = async (req, res) => {
-//   try {
-//     const blogs = await Blog.find({ status: 'needs-revision' })
-//       // .populate('author', 'name email')
-//       // .populate('approvedBy', 'name email')
-//       // .sort({ updatedAt: -1 });
-
-//     res.status(200).json({ 
-//       success: true,
-//       data: blogs 
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ 
-//       success: false,
-//       message: "Error fetching blogs needing revision",
-//       error: error.message
-//     });
-//   }
-// };
-
 // Controller to fetch all blogs
 const getReviewBlogs = async (req, res) => {
   try {

@@ -14,6 +14,14 @@ const BlogReview = () => {
   const [actionType, setActionType] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [reviewComments, setReviewComments] = useState("");
+
+  const tabs = [
+    { label: 'Dashboard', path: '/admin/dashboard' },
+    { label: 'Blog Approvals', path: '/admin/approveblogs' },
+    { label: 'Blog Reviews', path: '/admin/reviewblogs' },
+    { label: 'SW Programs', path: '/admin/swprograms' },
+    { label: 'MootCourts', path: '/admin/mootcourt' }
+  ];
  
   useEffect(() => {
     const fetchReviewBlogs = async () => {
@@ -230,7 +238,7 @@ const BlogReview = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AdminTopbar />
+        <AdminTopbar tabs={tabs} />
         <div className="flex items-center justify-center h-64">
           <FiLoader className="animate-spin text-4xl text-blue-500" />
           <span className="ml-3 text-xl">Loading pending blogs...</span>
@@ -242,7 +250,7 @@ const BlogReview = () => {
   if (error) {
     return (
       <div className="h-screen bg-gradient-to-br from-amber-50 to-gray-200">
-        <AdminTopbar />
+        <AdminTopbar tabs={tabs} />
         <div className="flex items-center justify-center h-64">
           <FiAlertCircle className="text-4xl text-red-500" />
           <span className="ml-3 text-xl text-red-600">{error}</span>
@@ -253,10 +261,10 @@ const BlogReview = () => {
 
   return (
     <div className='bg-gradient-to-br from-amber-50 to-gray-200 min-h-screen'>
-      <AdminTopbar />
+      <AdminTopbar tabs={tabs} />
       <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Pending Blogs for Approval</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Reviewed Blogs Pending for Approval</h1>
           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
             {blogs.length} pending
           </span>

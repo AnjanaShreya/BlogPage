@@ -1,35 +1,31 @@
-import React, { useState, useEffect } from "react";
-import AdminTopbar from "./AdminComponents/AdminTopbar";
-import { useNavigate } from "react-router-dom";
-import { FiLoader, FiAlertCircle, FiCheck } from "react-icons/fi";
-import BlogCard from "./AdminComponents/BlogCard";
-import BlogDetailModal from "./AdminComponents/BlogDetailModal";
+import React, { useState, useEffect } from 'react';
+import { FiLoader, FiAlertCircle } from 'react-icons/fi';
+import BlogCard from '../AdminComponents/BlogCard';
+import BlogDetailModal from '../AdminComponents/BlogDetailModal';
+import { FiCheck } from 'react-icons/fi';
+import AdminTopbar from '../AdminComponents/AdminTopbar';
 
-const ApproveBlogs = () => {
+const SAReviews = () => {
   const [blogs, setBlogs] = useState([]);
-  const [selectedBlog, setSelectedBlog] = useState(null);
-  const [rejectionReason, setRejectionReason] = useState("");
-  const [reviewComments, setReviewComments] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedBlog, setSelectedBlog] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [actionType, setActionType] = useState(null);
-  const navigate = useNavigate();
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [reviewComments, setReviewComments] = useState("");
 
   const tabs = [
-    { label: 'Dashboard', path: '/admin/dashboard' },
-    { label: 'Blog Approvals', path: '/admin/approveblogs' },
-    { label: 'Blog Reviews', path: '/admin/reviewblogs' },
-    { label: 'SW Programs', path: '/admin/swprograms' },
-    { label: 'MootCourts', path: '/admin/mootcourt' }
+    { label: 'Dashboard', path: '/admin/onlyblogreview' },
+    { label: 'First Submission', path: '/admin/subadminaprroval' },
+    { label: 'Blog Reviews', path: '/admin/subadminreviews' },
   ];
-
+ 
   useEffect(() => {
-    const fetchPendingBlogs = async () => {
+    const fetchReviewBlogs = async () => {
       try {
         setLoading(true);
-        setError(null);
-        const response = await fetch("http://localhost:5000/api/blogs/pending", {
+        const response = await fetch("http://localhost:5000/api/blogs/review", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -38,24 +34,23 @@ const ApproveBlogs = () => {
           credentials: 'include'
         });
 
-        if (response.status === 200) {
-          const result = await response.json();
-          setBlogs(Array.isArray(result.data) ? result.data : result);
-        } else if (response.status === 401) {
-          navigate("/admin/login");
-        } else {
-          throw new Error("Failed to fetch pending blogs");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch blogs needing revision');
         }
+
+        const data = await response.json();
+        setBlogs(data.data || []);
       } catch (err) {
-        console.error("Error fetching pending blogs:", err);
         setError(err.message);
+        console.error('Error fetching review blogs:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPendingBlogs();
-  }, [navigate]);
+    fetchReviewBlogs();
+  }, []);
 
   const sendEmailNotification = async (email, subject, message) => {
     try {
@@ -241,7 +236,7 @@ const ApproveBlogs = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <AdminTopbar tabs={tabs} />
+			  <AdminTopbar tabs={tabs} />
         <div className="flex items-center justify-center h-64">
           <FiLoader className="animate-spin text-4xl text-blue-500" />
           <span className="ml-3 text-xl">Loading pending blogs...</span>
@@ -253,7 +248,7 @@ const ApproveBlogs = () => {
   if (error) {
     return (
       <div className="h-screen bg-gradient-to-br from-amber-50 to-gray-200">
-        <AdminTopbar tabs={tabs} />
+			  <AdminTopbar tabs={tabs} />
         <div className="flex items-center justify-center h-64">
           <FiAlertCircle className="text-4xl text-red-500" />
           <span className="ml-3 text-xl text-red-600">{error}</span>
@@ -261,13 +256,13 @@ const ApproveBlogs = () => {
       </div>
     );
   }
-  
+
   return (
-    <div className="h-screen bg-gradient-to-br from-amber-50 to-gray-200">
-      <AdminTopbar tabs={tabs} />
+    <div className='bg-gradient-to-br from-amber-50 to-gray-200 min-h-screen'>
+		  <AdminTopbar tabs={tabs} />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Pending Blogs for Approval</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Reviewed Blogs Pending for Approval</h1>
           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
             {blogs.length} pending
           </span>
@@ -282,8 +277,8 @@ const ApproveBlogs = () => {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         
-        {blogs.map((blog) => (
-          <BlogCard
+        {blogs.map(blog => (
+          <BlogCard 
             key={blog._id}
             blog={blog}
             onView={() => setSelectedBlog(blog)}
@@ -291,18 +286,18 @@ const ApproveBlogs = () => {
               setSelectedBlog(blog);
               setActionType('approve');
             }}
-            onRequestRevision={() => {
-              setSelectedBlog(blog);
-              setActionType('request-revision');
-            }}
             onReject={() => {
               setSelectedBlog(blog);
               setActionType('reject');
             }}
+            onRequestRevision={() => {
+              setSelectedBlog(blog);
+              setActionType('request-revision');
+            }}
             isProcessing={isProcessing}
             actionType={actionType}
             showReviewComments={true}
-            showApproveOptions={true}
+            showApproveOptions={false}
           />
         ))}
         </div>
@@ -328,4 +323,4 @@ const ApproveBlogs = () => {
   );
 };
 
-export default ApproveBlogs;
+export default SAReviews;
