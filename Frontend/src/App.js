@@ -29,45 +29,45 @@ import OnlyBlogReview from './AdminPages/SubAdmin/OnlyBlogReview';
 import SAApprove from './AdminPages/SubAdmin/SAApprove';
 import SAReviews from './AdminPages/SubAdmin/SAReviews';
 
-// const CopyPasteRestriction = () => {
-//   const location = useLocation();
+const CopyPasteRestriction = () => {
+  const location = useLocation();
 
-//   useEffect(() => {
-//     const path = location.pathname;
+  useEffect(() => {
+    const path = location.pathname;
 
-//     const isExempt =
-//       path === '/blogform' ||
-//       path === '/contactus' ||
-//       path.startsWith('/admin') ||
-//       path.startsWith('/reviewsubmission');
+    const isExempt =
+      path === '/blogform' ||
+      path === '/contactus' ||
+      path.startsWith('/admin') ||
+      path.startsWith('/reviewsubmission');
 
-//     if (!isExempt) {
-//       const disableCopy = (e) => {
-//         e.preventDefault();
-//         alert('Copying content is disabled on this page.');
-//       };
+    if (!isExempt) {
+      const disableCopy = (e) => {
+        e.preventDefault();
+        alert('Copying content is disabled on this page.');
+      };
 
-//       document.addEventListener('copy', disableCopy);
-//       document.addEventListener('cut', disableCopy);
-//       document.addEventListener('paste', disableCopy);
+      document.addEventListener('copy', disableCopy);
+      document.addEventListener('cut', disableCopy);
+      document.addEventListener('paste', disableCopy);
 
-//       return () => {
-//         document.removeEventListener('copy', disableCopy);
-//         document.removeEventListener('cut', disableCopy);
-//         document.removeEventListener('paste', disableCopy);
-//       };
-//     }
-//   }, [location.pathname]);
+      return () => {
+        document.removeEventListener('copy', disableCopy);
+        document.removeEventListener('cut', disableCopy);
+        document.removeEventListener('paste', disableCopy);
+      };
+    }
+  }, [location.pathname]);
 
-//   return null;
-// };
+  return null;
+};
 
 function App() {
   return (
     <Router>
       <div className="App">
         {/* Add the CopyPasteRestriction component */}
-        {/* <CopyPasteRestriction /> */}
+        <CopyPasteRestriction />
         
         <Routes>
           <Route path="/" element={<Dashboard />} />
