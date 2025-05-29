@@ -24,10 +24,12 @@ const ReviewSubmission = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/blogs/${id}`);
+        const response = await fetch(`${baseUrl}/api/blogs/${id}`);
         const data = await response.json();
 
         if (data.success) {
@@ -69,7 +71,7 @@ const ReviewSubmission = () => {
 
 		try {
 			const token = localStorage.getItem('token');
-			const response = await fetch(`http://localhost:5000/api/blogs/resubmit/${id}`, {
+			const response = await fetch(`${baseUrl}/api/blogs/resubmit/${id}`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json',

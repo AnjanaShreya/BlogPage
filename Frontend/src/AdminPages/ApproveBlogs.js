@@ -16,6 +16,8 @@ const ApproveBlogs = () => {
   const [actionType, setActionType] = useState(null);
   const navigate = useNavigate();
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const tabs = [
     { label: 'Dashboard', path: '/admin/dashboard' },
     { label: 'Blog Approvals', path: '/admin/approveblogs' },
@@ -29,7 +31,7 @@ const ApproveBlogs = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch("http://localhost:5000/api/blogs/pending", {
+        const response = await fetch(`${baseUrl}/api/blogs/pending`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -59,7 +61,7 @@ const ApproveBlogs = () => {
 
   const sendEmailNotification = async (email, subject, message) => {
     try {
-      const response = await fetch("http://localhost:5000/api/email/send-email", {
+      const response = await fetch(`${baseUrl}/api/email/send-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +92,7 @@ const ApproveBlogs = () => {
     try {
       setIsProcessing(true);
       setActionType('approve');
-      const response = await fetch(`http://localhost:5000/api/blogs/approve/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/approve/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -142,7 +144,7 @@ const ApproveBlogs = () => {
     try {
       setIsProcessing(true);
       setActionType('reject');
-      const response = await fetch(`http://localhost:5000/api/blogs/reject/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/reject/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -198,7 +200,7 @@ const ApproveBlogs = () => {
       setIsProcessing(true);
       setActionType('request-revision');
       
-      const response = await fetch(`http://localhost:5000/api/blogs/request-revision/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/request-revision/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

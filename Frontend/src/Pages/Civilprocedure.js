@@ -11,10 +11,12 @@ const Civilprocedure = () => {
   const navigate = useNavigate();
   const maxLength = 90;
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs"); 
+        const response = await axios.get(`${baseUrl}/api/blogs`); 
         const filteredBlogs = response.data.filter(blog =>
           ["Civil Procedure 1908"].includes(blog.category)
         );

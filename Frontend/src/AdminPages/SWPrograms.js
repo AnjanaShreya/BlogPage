@@ -25,13 +25,15 @@ const SWPrograms = () => {
     { label: 'MootCourts', path: '/admin/mootcourt' }
   ];
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const getAuthToken = () => {
     return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken');
   };
 
   const fetchPrograms = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/programs', {
+      const response = await fetch(`${baseUrl}/api/programs`, {
         credentials: 'include'
       });
       
@@ -73,7 +75,7 @@ const SWPrograms = () => {
       };
 
       let response;
-      let url = 'http://localhost:5000/api/programs';
+      let url = `${baseUrl}/api/programs`;
       let method = 'POST';
       
       if (!isAdding) {
@@ -134,7 +136,7 @@ const SWPrograms = () => {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`http://localhost:5000/api/programs/${id}`, {
+      const response = await fetch(`${baseUrl}/api/programs/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

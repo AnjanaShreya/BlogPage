@@ -20,3 +20,6 @@ he can neither approve nor reject the blogs
 
 
 --checkk admin tokens everywhere
+
+--add some kind of verificatioins for post and put also
+--keep tokens in cookies only

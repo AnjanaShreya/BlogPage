@@ -22,12 +22,14 @@ const BlogReview = () => {
     { label: 'SW Programs', path: '/admin/swprograms' },
     { label: 'MootCourts', path: '/admin/mootcourt' }
   ];
+
+  const baseUrl = process.env.REACT_APP_BASE_URL;
  
   useEffect(() => {
     const fetchReviewBlogs = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/api/blogs/review", {
+        const response = await fetch(`${baseUrl}/api/blogs/review`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -56,7 +58,7 @@ const BlogReview = () => {
 
   const sendEmailNotification = async (email, subject, message) => {
     try {
-      const response = await fetch("http://localhost:5000/api/email/send-email", {
+      const response = await fetch(`${baseUrl}/api/email/send-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,7 +89,7 @@ const BlogReview = () => {
     try {
       setIsProcessing(true);
       setActionType('approve');
-      const response = await fetch(`http://localhost:5000/api/blogs/approve/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/approve/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -139,7 +141,7 @@ const BlogReview = () => {
     try {
       setIsProcessing(true);
       setActionType('reject');
-      const response = await fetch(`http://localhost:5000/api/blogs/reject/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/reject/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +197,7 @@ const BlogReview = () => {
       setIsProcessing(true);
       setActionType('request-revision');
       
-      const response = await fetch(`http://localhost:5000/api/blogs/request-revision/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/request-revision/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -8,10 +8,12 @@ const Card = ({ searchQuery, limit }) => {
   const [expandedCards, setExpandedCards] = useState({});
   const maxLength = 90;
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs/approved");
+        const response = await axios.get(`${baseUrl}/api/blogs/approved`);
 
         const sortedBlogs = response.data.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)

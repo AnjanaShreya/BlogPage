@@ -8,11 +8,13 @@ import Footer from "../Navbar/Footer";
 const BlogDetails = () => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
+  
+  const baseUrl = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/blogs/${id}`);
+        const response = await axios.get(`${baseUrl}/api/blogs/${id}`);
         if (response.data.success) {
           setBlog(response.data.data);
         } else {

@@ -14,11 +14,13 @@ const AllBlogs = () => {
   const navigate = useNavigate();
   const maxLength = 90;
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   // Fetch Blogs
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs/approved");
+        const response = await axios.get(`${baseUrl}/api/blogs/approved`);
         const sortedBlogs = response.data.data.sort(
           (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );

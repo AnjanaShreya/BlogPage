@@ -22,12 +22,14 @@ const SAApprove = () => {
     { label: 'Blog Reviews', path: '/admin/subadminreviews' },
   ];
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
     const fetchPendingBlogs = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch("http://localhost:5000/api/blogs/pending", {
+        const response = await fetch(`${baseUrl}/api/blogs/pending`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -57,7 +59,7 @@ const SAApprove = () => {
 
   const sendEmailNotification = async (email, subject, message) => {
     try {
-      const response = await fetch("http://localhost:5000/api/email/send-email", {
+      const response = await fetch(`${baseUrl}/api/email/send-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -88,7 +90,7 @@ const SAApprove = () => {
     try {
       setIsProcessing(true);
       setActionType('approve');
-      const response = await fetch(`http://localhost:5000/api/blogs/approve/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/approve/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -140,7 +142,7 @@ const SAApprove = () => {
     try {
       setIsProcessing(true);
       setActionType('reject');
-      const response = await fetch(`http://localhost:5000/api/blogs/reject/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/reject/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -196,7 +198,7 @@ const SAApprove = () => {
       setIsProcessing(true);
       setActionType('request-revision');
       
-      const response = await fetch(`http://localhost:5000/api/blogs/request-revision/${blogId}`, {
+      const response = await fetch(`${baseUrl}/api/blogs/request-revision/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

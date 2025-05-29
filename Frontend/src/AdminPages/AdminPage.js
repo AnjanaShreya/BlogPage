@@ -10,6 +10,8 @@ const AdminPage = () => {
   const [pendingBlogs, setPendingBlogs] = useState(0);
   const [pendingReviewBlogs, setPendingReviewBlogs] = useState(0);
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const tabs = [
     { label: 'Dashboard', path: '/admin/dashboard' },
     { label: 'Blog Approvals', path: '/admin/approveblogs' },
@@ -21,7 +23,7 @@ const AdminPage = () => {
   useEffect(() => {
     const verifyAdmin = async () => {
       try {
-        const response = await fetch('http://localhost:5000/auth/admin/dashboard', {
+        const response = await fetch(`${baseUrl}/auth/admin/dashboard`, {
           credentials: 'include',
         });
         if (!response.ok) throw new Error('Not authorized');
@@ -35,12 +37,12 @@ const AdminPage = () => {
     const fetchStats = async () => {
       try {
         const [programRes, mootRes, blogsRes, reviewRes] = await Promise.all([
-          fetch('http://localhost:5000/api/programs/count/upcoming'),
-          fetch('http://localhost:5000/api/moot-courts/count/upcoming'),
-          fetch('http://localhost:5000/api/blogs/count/pending', {
+          fetch(`${baseUrl}/api/programs/count/upcoming`),
+          fetch(`${baseUrl}/api/moot-courts/count/upcoming`),
+          fetch(`${baseUrl}/api/blogs/count/pending`, {
             credentials: 'include' // Needed if using session cookies
           }),
-          fetch('http://localhost:5000/api/blogs/count/review', {
+          fetch(`${baseUrl}/api/blogs/count/review`, {
             credentials: 'include' // Needed if using session cookies
           })
         ]);

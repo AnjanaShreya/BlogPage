@@ -11,10 +11,12 @@ const MootCourts = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/moot-courts');
+        const response = await fetch(`${baseUrl}/api/moot-courts`);
         if (!response.ok) {
           throw new Error('Failed to fetch events');
         }

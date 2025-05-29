@@ -19,6 +19,8 @@ const BlogForm = () => {
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -53,7 +55,7 @@ const BlogForm = () => {
     };
   
     try {
-      const response = await fetch("http://localhost:5000/api/submit", {
+      const response = await fetch(`${baseUrl}/api/submit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -89,7 +91,7 @@ const BlogForm = () => {
 
   const handleGoToDashboard = async () => {
     try {
-      const response = await fetch("http://localhost:5000/auth/signout", {
+      const response = await fetch(`${baseUrl}/auth/signout`, {
         method: "POST",
         credentials: 'include',
       });

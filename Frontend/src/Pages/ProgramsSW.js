@@ -13,10 +13,12 @@ const ProgramsSW = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/programs');
+        const response = await fetch(`${baseUrl}/api/programs`);
         if (!response.ok) {
           throw new Error('Failed to fetch programs');
         }

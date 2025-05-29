@@ -11,6 +11,8 @@ const Signup = ({ onClose, onLogin }) => {
   });
   const [error, setError] = useState("");
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const toggleForm = () => {
     setIsSignIn(!isSignIn);
     setError("");
@@ -36,7 +38,7 @@ const Signup = ({ onClose, onLogin }) => {
     };
 
     try {
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const res = await fetch(`${baseUrl}${endpoint}`, {
         method: "POST",
         credentials: "include",
         headers: {

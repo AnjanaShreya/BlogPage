@@ -29,6 +29,8 @@ const MootCourt = () => {
     { label: 'MootCourts', path: '/admin/mootcourt' }
   ];
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCurrentEvent(prev => ({ ...prev, [name]: value }));
@@ -57,8 +59,8 @@ const MootCourt = () => {
   const saveEvent = async () => {
     try {
       const endpoint = isAdding 
-        ? 'http://localhost:5000/api/moot-courts'
-        : `http://localhost:5000/api/moot-courts/${currentEvent._id}`;
+        ? `${baseUrl}/api/moot-courts`
+        : `${baseUrl}/api/moot-courts/${currentEvent._id}`;
       
       const method = isAdding ? 'POST' : 'PUT';
       
@@ -113,7 +115,7 @@ const MootCourt = () => {
     }
     
     try {
-      const response = await fetch(`http://localhost:5000/api/moot-courts/${id}`, {
+      const response = await fetch(`${baseUrl}/api/moot-courts/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -135,7 +137,7 @@ const MootCourt = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/moot-courts');
+        const response = await fetch(`${baseUrl}/api/moot-courts`);
         if (response.ok) {
           const data = await response.json();
           setEvents(data.data);

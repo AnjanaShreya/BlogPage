@@ -5,9 +5,11 @@ const AdminTopbar = ({ tabs = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:5000/auth/signout', {
+      await fetch(`${baseUrl}/auth/signout`, {
         method: 'POST',
         credentials: 'include',
       });

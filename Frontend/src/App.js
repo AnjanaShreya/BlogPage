@@ -105,10 +105,6 @@ const SubAdminRoute = ({ children }) => (
   <PrivateRoute requiredRole="subadmin">{children}</PrivateRoute>
 );
 
-const UserRoute = ({ children }) => (
-  <PrivateRoute requiredRole="user">{children}</PrivateRoute>
-);
-
 const UserPrivateRoute = ({ children, redirectTo = "/" }) => {
   const token = sessionStorage.getItem('userToken');
   const userRole = sessionStorage.getItem('userRole');

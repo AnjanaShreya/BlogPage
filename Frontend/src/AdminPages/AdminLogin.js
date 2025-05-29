@@ -8,13 +8,15 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate(); 
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
   
     try {
-      const response = await fetch("http://localhost:5000/auth/admin/signin", {
+      const response = await fetch(`${baseUrl}/auth/admin/signin`, {
         method: "POST",
         credentials: "include",
         headers: {

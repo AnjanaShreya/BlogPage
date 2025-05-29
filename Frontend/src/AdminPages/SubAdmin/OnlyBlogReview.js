@@ -14,44 +14,46 @@ const OnlyBlogReview = () => {
     { label: 'Blog Reviews', path: '/admin/subadminreviews' },
   ];
 
-    useEffect(() => {
-      const verifyAdmin = async () => {
-        try {
-          const response = await fetch('http://localhost:5000/auth/admin/dashboard', {
-            credentials: 'include',
-          });
-          if (!response.ok) throw new Error('Not authorized');
-        } catch {
-          sessionStorage.removeItem('isAdmin');
-          navigate('/admin/login');
-        }
-      };
-  
-      // Update your fetchStats function
-      const fetchStats = async () => {
-        try {
-          const [blogsRes, reviewRes] = await Promise.all([
-            fetch('http://localhost:5000/api/blogs/count/pending', {
-              credentials: 'include' // Needed if using session cookies
-            }),
-            fetch('http://localhost:5000/api/blogs/count/review', {
-              credentials: 'include' // Needed if using session cookies
-            })
-          ]);
-        
-          const blogsData = await blogsRes.json();
-          const reviewData = await reviewRes.json();
-        
-          setPendingBlogs(blogsData.count || 0);
-          setPendingReviewBlogs(reviewData.count || 0);
-        } catch (err) {
-          console.error('Error fetching stats:', err);
-        }
-      };
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
+  useEffect(() => {
+    const verifyAdmin = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/auth/admin/dashboard`, {
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Not authorized');
+      } catch {
+        sessionStorage.removeItem('isAdmin');
+        navigate('/admin/login');
+      }
+    };
+
+    // Update your fetchStats function
+    const fetchStats = async () => {
+      try {
+        const [blogsRes, reviewRes] = await Promise.all([
+          fetch(`${baseUrl}/api/blogs/count/pending`, {
+            credentials: 'include' // Needed if using session cookies
+          }),
+          fetch(`${baseUrl}/api/blogs/count/review`, {
+            credentials: 'include' // Needed if using session cookies
+          })
+        ]);
       
-          verifyAdmin();
-          fetchStats();
-    }, [navigate]);
+        const blogsData = await blogsRes.json();
+        const reviewData = await reviewRes.json();
+      
+        setPendingBlogs(blogsData.count || 0);
+        setPendingReviewBlogs(reviewData.count || 0);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    };
+    
+        verifyAdmin();
+        fetchStats();
+  }, [navigate]);
 
   return (
     <div className="h-screen bg-gradient-to-br from-amber-50 to-gray-200">

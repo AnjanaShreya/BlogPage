@@ -11,10 +11,12 @@ const OtherCategories = () => {
   const navigate = useNavigate();
   const maxLength = 90;
 
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs"); // Adjust API URL if needed
+        const response = await axios.get(`${baseUrl}/api/blogs`); // Adjust API URL if needed
         
         // Categories to exclude
         const excludedCategories = [
