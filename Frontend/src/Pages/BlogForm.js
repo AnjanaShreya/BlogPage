@@ -95,6 +95,14 @@ const BlogForm = () => {
       });
 
       if (response.ok) {
+        // Clear all storage items
+        sessionStorage.removeItem('userToken');
+        sessionStorage.removeItem('adminToken');
+        sessionStorage.removeItem('userRole');
+        sessionStorage.removeItem('adminRole');
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        
         navigate("/");
       } else {
         console.error("Sign out failed");
@@ -103,6 +111,7 @@ const BlogForm = () => {
       console.error("Error during sign out:", error);
     }
   };
+
 
   // Quill editor modules configuration
   const modules = {

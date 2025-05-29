@@ -49,6 +49,12 @@ const Signup = ({ onClose, onLogin }) => {
 
       if (res.ok) {
         if (isSignIn) {
+          sessionStorage.setItem('userToken', data.token);
+          sessionStorage.setItem('userRole', 'user');
+          
+          sessionStorage.removeItem('adminToken');
+          sessionStorage.removeItem('adminRole');
+          
           onLogin("user");
           navigate("/blogform");
         } else {

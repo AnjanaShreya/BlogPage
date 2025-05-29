@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Dashboard from './Pages/Dashboard';
 import BlogForm from './Pages/BlogForm';
 import ContactUs from './Pages/ContactUs';
@@ -62,17 +62,81 @@ const CopyPasteRestriction = () => {
   return null;
 };
 
+const PrivateRoute = ({ children, requiredRole = null, redirectTo = "/admin/login" }) => {
+  // Check for admin authentication
+  const adminToken = sessionStorage.getItem('adminToken');
+  const adminRole = sessionStorage.getItem('adminRole');
+  
+  // Check for user authentication
+  const userToken = sessionStorage.getItem('userToken');
+  const userRole = sessionStorage.getItem('userRole');
+
+  // Debugging
+  console.log('Auth check:', { adminToken, adminRole, userToken, userRole, requiredRole });
+
+  // If no token at all
+  if (!adminToken && !userToken) {
+    console.log('No token, redirecting to login');
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  // Check if required role matches
+  if (requiredRole) {
+    if (adminRole === requiredRole) {
+      return children;
+    }
+    if (userRole === requiredRole) {
+      return children;
+    }
+    console.log('Role mismatch, redirecting');
+    return <Navigate to="/" replace />;
+  }
+
+  // If no specific role required but has valid token
+  return children;
+};
+
+// Role-based route components
+const AdminRoute = ({ children }) => (
+  <PrivateRoute requiredRole="admin">{children}</PrivateRoute>
+);
+
+const SubAdminRoute = ({ children }) => (
+  <PrivateRoute requiredRole="subadmin">{children}</PrivateRoute>
+);
+
+const UserRoute = ({ children }) => (
+  <PrivateRoute requiredRole="user">{children}</PrivateRoute>
+);
+
+const UserPrivateRoute = ({ children, redirectTo = "/" }) => {
+  const token = sessionStorage.getItem('userToken');
+  const userRole = sessionStorage.getItem('userRole');
+
+  console.log('User auth check:', { token, userRole });
+
+  if (!token || userRole !== 'user') {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  return children;
+};
+
 function App() {
   return (
     <Router>
       <div className="App">
-        {/* Add the CopyPasteRestriction component */}
         <CopyPasteRestriction />
         
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Dashboard />} />
           <Route path='/contactus' element={<ContactUs />} />
-          <Route path='/blogform' element={<BlogForm />} />
+          <Route path='/blogform' element={
+            <UserPrivateRoute>
+              <BlogForm />
+            </UserPrivateRoute>
+          } />
           <Route path='/blog/:id' element={<BlogDetails />} />
           <Route path='/allblogs' element={<AllBlogs />} />
           <Route path='/evidenceact' element={<EvidenceAct />} />
@@ -88,19 +152,64 @@ function App() {
           <Route path='/mootcourts' element={<MootCourts />} />
           <Route path='/programssw' element={<ProgramsSW />} />
           
-          {/* Admin Routes */}
+          {/* Auth Routes */}
           <Route path='/admin/login' element={<AdminLogin />} />
-          <Route path='/admin/dashboard' element={<AdminPage/>} />
-          <Route path="/admin/mootcourt" element={<MootCourt />} />
-          <Route path="/admin/swprograms" element={<SWPrograms />} />
-          <Route path="/admin/approveblogs" element={<ApproveBlogs />} />
-          <Route path="/admin/reviewblogs" element={<BlogReviews />} />
-          <Route path="/admin/onlyblogreview" element={<OnlyBlogReview />} />
-          <Route path="/admin/subadminaprroval" element={<SAApprove />} />
-          <Route path="/admin/subadminreviews" element={<SAReviews />} />
-
-          <Route path="/reviewsubmission/:id" element={<ReviewSubmission />} />
           
+          {/* Protected Admin Routes */}
+          <Route path='/admin/dashboard' element={
+            <PrivateRoute>
+              <AdminPage />
+            </PrivateRoute>
+          } />
+          
+          <Route path="/admin/mootcourt" element={
+            <AdminRoute>
+              <MootCourt />
+            </AdminRoute>
+          } />
+          
+          <Route path="/admin/swprograms" element={
+            <AdminRoute>
+              <SWPrograms />
+            </AdminRoute>
+          } />
+          
+          <Route path="/admin/approveblogs" element={
+            <AdminRoute>
+              <ApproveBlogs />
+            </AdminRoute>
+          } />
+          
+          <Route path="/admin/reviewblogs" element={
+            <PrivateRoute>
+              <BlogReviews />
+            </PrivateRoute>
+          } />
+          
+          <Route path="/admin/onlyblogreview" element={
+            <SubAdminRoute>
+              <OnlyBlogReview />
+            </SubAdminRoute>
+          } />
+          
+          <Route path="/admin/subadminaprroval" element={
+            <SubAdminRoute>
+              <SAApprove />
+            </SubAdminRoute>
+          } />
+          
+          <Route path="/admin/subadminreviews" element={
+            <SubAdminRoute>
+              <SAReviews />
+            </SubAdminRoute>
+          } />
+
+          {/* Review submission - can be accessed by both admins and subadmins */}
+          <Route path="/reviewsubmission/:id" element={
+            <PrivateRoute>
+              <ReviewSubmission />
+            </PrivateRoute>
+          } />
         </Routes>
       </div>
     </Router>

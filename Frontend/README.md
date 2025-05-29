@@ -13,6 +13,7 @@ another bg -> bg-[#b8870bd7]
 --comment out swprograms and moot courts 
 --add env in both frontend and backend
 --dashoboard contents also see what all to add
+--add private routing
 
 --subadmin should get the pending blogs whithout aprrove button and review page also to review without approve button....
 he can neither approve nor reject the blogs 

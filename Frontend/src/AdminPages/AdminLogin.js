@@ -33,6 +33,7 @@ const AdminLogin = () => {
       sessionStorage.setItem("isAdmin", data.role === "admin");
       sessionStorage.setItem("isSubadmin", data.role === "subadmin");
       sessionStorage.setItem("adminToken", data.token);
+      sessionStorage.setItem("adminRole", data.role);
       
       // Redirect based on role
       if (data.role === "admin") {
