@@ -28,6 +28,7 @@ import ReviewSubmission from './AdminPages/ReviewSubmission';
 import OnlyBlogReview from './AdminPages/SubAdmin/OnlyBlogReview';
 import SAApprove from './AdminPages/SubAdmin/SAApprove';
 import SAReviews from './AdminPages/SubAdmin/SAReviews';
+import { AuthProvider } from './context/AuthContext';
 
 const CopyPasteRestriction = () => {
   const location = useLocation();
@@ -62,153 +63,149 @@ const CopyPasteRestriction = () => {
   return null;
 };
 
-const PrivateRoute = ({ children, requiredRole = null, redirectTo = "/admin/login" }) => {
-  // Check for admin authentication
-  const adminToken = sessionStorage.getItem('adminToken');
-  const adminRole = sessionStorage.getItem('adminRole');
+// const PrivateRoute = ({ children, requiredRole = null, redirectTo = "/admin/login" }) => {
+//   // Check for admin authentication
+//   const adminToken = sessionStorage.getItem('adminToken');
+//   const adminRole = sessionStorage.getItem('adminRole');
   
-  // Check for user authentication
-  const userToken = sessionStorage.getItem('userToken');
-  const userRole = sessionStorage.getItem('userRole');
+//   // Check for user authentication
+//   const userToken = sessionStorage.getItem('userToken');
+//   const userRole = sessionStorage.getItem('userRole');
 
-  // Debugging
-  console.log('Auth check:', { adminToken, adminRole, userToken, userRole, requiredRole });
+//   // Debugging
+//   console.log('Auth check:', { adminToken, adminRole, userToken, userRole, requiredRole });
 
-  // If no token at all
-  if (!adminToken && !userToken) {
-    console.log('No token, redirecting to login');
-    return <Navigate to={redirectTo} replace />;
-  }
+//   // If no token at all
+//   if (!adminToken && !userToken) {
+//     console.log('No token, redirecting to login');
+//     return <Navigate to={redirectTo} replace />;
+//   }
 
-  // Check if required role matches
-  if (requiredRole) {
-    if (adminRole === requiredRole) {
-      return children;
-    }
-    if (userRole === requiredRole) {
-      return children;
-    }
-    console.log('Role mismatch, redirecting');
-    return <Navigate to="/" replace />;
-  }
+//   // Check if required role matches
+//   if (requiredRole) {
+//     if (adminRole === requiredRole) {
+//       return children;
+//     }
+//     if (userRole === requiredRole) {
+//       return children;
+//     }
+//     console.log('Role mismatch, redirecting');
+//     return <Navigate to="/" replace />;
+//   }
 
-  // If no specific role required but has valid token
-  return children;
-};
+//   // If no specific role required but has valid token
+//   return children;
+// };
 
-// Role-based route components
-const AdminRoute = ({ children }) => (
-  <PrivateRoute requiredRole="admin">{children}</PrivateRoute>
-);
+// // Role-based route components
+// const AdminRoute = ({ children }) => (
+//   <PrivateRoute requiredRole="admin">{children}</PrivateRoute>
+// );
 
-const SubAdminRoute = ({ children }) => (
-  <PrivateRoute requiredRole="subadmin">{children}</PrivateRoute>
-);
+// const SubAdminRoute = ({ children }) => (
+//   <PrivateRoute requiredRole="subadmin">{children}</PrivateRoute>
+// );
 
-const UserPrivateRoute = ({ children, redirectTo = "/" }) => {
-  const token = sessionStorage.getItem('userToken');
-  const userRole = sessionStorage.getItem('userRole');
+// const UserPrivateRoute = ({ children, redirectTo = "/" }) => {
+//   const token = sessionStorage.getItem('userToken');
+//   const userRole = sessionStorage.getItem('userRole');
 
-  console.log('User auth check:', { token, userRole });
+//   console.log('User auth check:', { token, userRole });
 
-  if (!token || userRole !== 'user') {
-    return <Navigate to={redirectTo} replace />;
-  }
+//   if (!token || userRole !== 'user') {
+//     return <Navigate to={redirectTo} replace />;
+//   }
 
-  return children;
-};
+//   return children;
+// };
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <CopyPasteRestriction />
-        
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Dashboard />} />
-          <Route path='/contactus' element={<ContactUs />} />
-          <Route path='/blogform' element={
-            <UserPrivateRoute>
-              <BlogForm />
-            </UserPrivateRoute>
-          } />
-          <Route path='/blog/:id' element={<BlogDetails />} />
-          <Route path='/allblogs' element={<AllBlogs />} />
-          <Route path='/evidenceact' element={<EvidenceAct />} />
-          <Route path='/electionlaws' element={<ElectionLaws />} />
-          <Route path='/humanrights' element={<HumanRights />} />
-          <Route path='/lawoftorts' element={<LawofTorts />} />
-          <Route path='/constitutionofindia' element={<ConstitutionofIndia />} />
-          <Route path='/civilprocedure' element={<Civilprocedure />} />
-          <Route path='/administrativelaw' element={<AdministrativeLaw />} />
-          <Route path='/lawofcontracts' element={<LawofContracts />} />
-          <Route path='/bnss' element={<Bnss />} />
-          <Route path='/othercategories' element={<OtherCategories />} />
-          <Route path='/mootcourts' element={<MootCourts />} />
-          <Route path='/programssw' element={<ProgramsSW />} />
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <CopyPasteRestriction />
           
-          {/* Auth Routes */}
-          <Route path='/admin/login' element={<AdminLogin />} />
-          
-          {/* Protected Admin Routes */}
-          <Route path='/admin/dashboard' element={
-            <PrivateRoute>
-              <AdminPage />
-            </PrivateRoute>
-          } />
-          
-          <Route path="/admin/mootcourt" element={
-            <AdminRoute>
-              <MootCourt />
-            </AdminRoute>
-          } />
-          
-          <Route path="/admin/swprograms" element={
-            <AdminRoute>
-              <SWPrograms />
-            </AdminRoute>
-          } />
-          
-          <Route path="/admin/approveblogs" element={
-            <AdminRoute>
-              <ApproveBlogs />
-            </AdminRoute>
-          } />
-          
-          <Route path="/admin/reviewblogs" element={
-            <PrivateRoute>
-              <BlogReviews />
-            </PrivateRoute>
-          } />
-          
-          <Route path="/admin/onlyblogreview" element={
-            <SubAdminRoute>
-              <OnlyBlogReview />
-            </SubAdminRoute>
-          } />
-          
-          <Route path="/admin/subadminaprroval" element={
-            <SubAdminRoute>
-              <SAApprove />
-            </SubAdminRoute>
-          } />
-          
-          <Route path="/admin/subadminreviews" element={
-            <SubAdminRoute>
-              <SAReviews />
-            </SubAdminRoute>
-          } />
-
-          {/* Review submission - can be accessed by both admins and subadmins */}
-          <Route path="/reviewsubmission/:id" element={
-            <PrivateRoute>
-              <ReviewSubmission />
-            </PrivateRoute>
-          } />
-        </Routes>
-      </div>
-    </Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Dashboard />} />
+            <Route path='/contactus' element={<ContactUs />} />
+            <Route path='/blogform' element={
+              // <UserPrivateRoute>
+                <BlogForm />
+              // </UserPrivateRoute>
+            } />
+            <Route path='/blog/:id' element={<BlogDetails />} />
+            <Route path='/allblogs' element={<AllBlogs />} />
+            <Route path='/evidenceact' element={<EvidenceAct />} />
+            <Route path='/electionlaws' element={<ElectionLaws />} />
+            <Route path='/humanrights' element={<HumanRights />} />
+            <Route path='/lawoftorts' element={<LawofTorts />} />
+            <Route path='/constitutionofindia' element={<ConstitutionofIndia />} />
+            <Route path='/civilprocedure' element={<Civilprocedure />} />
+            <Route path='/administrativelaw' element={<AdministrativeLaw />} />
+            <Route path='/lawofcontracts' element={<LawofContracts />} />
+            <Route path='/bnss' element={<Bnss />} />
+            <Route path='/othercategories' element={<OtherCategories />} />
+            <Route path='/mootcourts' element={<MootCourts />} />
+            <Route path='/programssw' element={<ProgramsSW />} />
+            <Route path="/reviewsubmission/:id" element={<ReviewSubmission />} />
+            
+            {/* Auth Routes */}
+            <Route path='/admin/login' element={<AdminLogin />} />
+            
+            {/* Protected Admin Routes */}
+            <Route path='/admin/dashboard' element={
+              // <PrivateRoute>
+                <AdminPage />
+              // </PrivateRoute>
+            } />
+            
+            <Route path="/admin/mootcourt" element={
+              // <AdminRoute>
+                <MootCourt />
+              // </AdminRoute>
+            } />
+            
+            <Route path="/admin/swprograms" element={
+              // <AdminRoute>
+                <SWPrograms />
+              // </AdminRoute>
+            } />
+            
+            <Route path="/admin/approveblogs" element={
+              // <AdminRoute>
+                <ApproveBlogs />
+              // </AdminRoute>
+            } />
+            
+            <Route path="/admin/reviewblogs" element={
+              // <PrivateRoute>
+                <BlogReviews />
+              // </PrivateRoute>
+            } />
+            
+            <Route path="/admin/onlyblogreview" element={
+              // <SubAdminRoute>
+                <OnlyBlogReview />
+              // </SubAdminRoute>
+            } />
+            
+            <Route path="/admin/subadminaprroval" element={
+              // <SubAdminRoute>
+                <SAApprove />
+              // </SubAdminRoute>
+            } />
+            
+            <Route path="/admin/subadminreviews" element={
+              // <SubAdminRoute>
+                <SAReviews />
+              // </SubAdminRoute>
+            } />
+          </Routes>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 

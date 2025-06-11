@@ -1,7 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import AdminTopbar from './AdminComponents/AdminTopbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faPlus, faTimes, faCalendarAlt, faMapMarkerAlt, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faEdit, 
+  faTrash, 
+  faPlus, 
+  faTimes, 
+  faCalendarAlt, 
+  faMapMarkerAlt, 
+  faUsers 
+} from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const MootCourt = () => {
   const [events, setEvents] = useState([]);
@@ -20,6 +32,8 @@ const MootCourt = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, loading: authLoading, verifySession } = useAuth();
+  const navigate = useNavigate();
 
   const tabs = [
     { label: 'Dashboard', path: '/admin/dashboard' },
@@ -30,6 +44,66 @@ const MootCourt = () => {
   ];
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkAuthAndFetch = async () => {
+      try {
+        // First verify session
+        const isAuthenticated = await verifySession();
+        
+        if (!isAuthenticated || user?.role !== 'admin') {
+          if (isMounted) {
+            navigate("/admin/login");
+          }
+          return;
+        }
+
+        // Only fetch events if authenticated and authorized
+        if (isMounted) {
+          setIsLoading(true);
+        }
+
+        await fetchEvents();
+      } catch (err) {
+        if (isMounted) {
+          toast.error(err.message);
+          console.error('Error in checkAuthAndFetch:', err);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    // Only run if authLoading is false (auth state is initialized)
+    if (!authLoading) {
+      checkAuthAndFetch();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authLoading, user?.role, navigate]);
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/moot-courts`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+      
+      const data = await response.json();
+      setEvents(data.data);
+    } catch (error) {
+      throw error;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,24 +141,26 @@ const MootCourt = () => {
       const response = await fetch(endpoint, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(currentEvent),
-        credentials: 'include'
+        credentials: 'include',
+        body: JSON.stringify(currentEvent)
       });
   
       if (!response.ok) {
-        throw new Error('Failed to save event');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save event');
       }
   
       const data = await response.json();
       
       if (isAdding) {
         setEvents([...events, data.data].sort((a, b) => new Date(a.date) - new Date(b.date)));
+        toast.success('Event added successfully');
       } else {
         setEvents(events.map(e => e._id === data.data._id ? data.data : e)
           .sort((a, b) => new Date(a.date) - new Date(b.date)));
+        toast.success('Event updated successfully');
       }
   
       // Reset form
@@ -105,7 +181,7 @@ const MootCourt = () => {
       setIsEditing(false);
     } catch (error) {
       console.error('Error saving event:', error);
-      alert('Failed to save event: ' + error.message);
+      toast.error(error.message);
     }
   };
 
@@ -117,40 +193,21 @@ const MootCourt = () => {
     try {
       const response = await fetch(`${baseUrl}/api/moot-courts/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
         credentials: 'include'
       });
   
       if (!response.ok) {
-        throw new Error('Failed to delete event');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete event');
       }
   
       setEvents(events.filter(event => event._id !== id));
+      toast.success('Event deleted successfully');
     } catch (error) {
       console.error('Error deleting event:', error);
-      alert('Failed to delete event: ' + error.message);
+      toast.error(error.message);
     }
   };
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch(`${baseUrl}/api/moot-courts`);
-        if (response.ok) {
-          const data = await response.json();
-          setEvents(data.data);
-        }
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        setIsLoading(false);
-      }
-    };
-  
-    fetchEvents();
-  }, []);
 
   const startAddingEvent = () => {
     setCurrentEvent({
@@ -173,11 +230,23 @@ const MootCourt = () => {
     setCurrentEvent({
       ...event,
       date: event.date ? new Date(event.date).toISOString().split('T')[0] : '',
-      registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().split('T')[0] : ''
+      registrationDeadline: event.registrationDeadline ? 
+        new Date(event.registrationDeadline).toISOString().split('T')[0] : ''
     });
     setIsEditing(true);
     setIsAdding(false);
   };
+
+  if (authLoading) {
+    return (
+      <div className="bg-gradient-to-br from-amber-50 to-gray-200 min-h-screen">
+        <AdminTopbar tabs={tabs} />
+        <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -197,13 +266,15 @@ const MootCourt = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Moot Court Competition Admin</h1>
-            <button 
-              onClick={startAddingEvent}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center gap-2"
-            >
-              <FontAwesomeIcon icon={faPlus} />
-              Add Event
-            </button>
+            {user?.role === 'admin' && (
+              <button 
+                onClick={startAddingEvent}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center gap-2"
+              >
+                <FontAwesomeIcon icon={faPlus} />
+                Add Event
+              </button>
+            )}
           </div>
 
           {/* Events List */}
@@ -228,22 +299,24 @@ const MootCourt = () => {
                     </div>
                   </div>
                   
-                  <div className="flex justify-end space-x-2">
-                    <button 
-                      onClick={() => startEditingEvent(event)}
-                      className="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition flex items-center gap-1"
-                    >
-                      <FontAwesomeIcon icon={faEdit} size="sm" />
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => deleteEvent(event._id)}
-                      className="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition flex items-center gap-1"
-                    >
-                      <FontAwesomeIcon icon={faTrash} size="sm" />
-                      Event Completed
-                    </button>
-                  </div>
+                  {user?.role === 'admin' && (
+                    <div className="flex justify-end space-x-2">
+                      <button 
+                        onClick={() => startEditingEvent(event)}
+                        className="px-3 py-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition flex items-center gap-1"
+                      >
+                        <FontAwesomeIcon icon={faEdit} size="sm" />
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => deleteEvent(event._id)}
+                        className="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition flex items-center gap-1"
+                      >
+                        <FontAwesomeIcon icon={faTrash} size="sm" />
+                        Event Completed
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

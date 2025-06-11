@@ -1,19 +1,15 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminTopbar = ({ tabs = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const baseUrl = process.env.REACT_APP_BASE_URL;
+  const { logout } = useAuth(); 
 
   const handleLogout = async () => {
     try {
-      await fetch(`${baseUrl}/auth/signout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      sessionStorage.removeItem('isAdmin');
+      await logout(); 
       navigate('/admin/login');
     } catch (error) {
       console.error('Logout error:', error);

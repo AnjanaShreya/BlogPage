@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -7,54 +8,37 @@ const AdminLogin = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate(); 
+  const { login } = useAuth();
 
-  const baseUrl = process.env.REACT_APP_BASE_URL;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-  
-    try {
-      const response = await fetch(`${baseUrl}/auth/admin/signin`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-      });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-  
-      // Store user info in session
-      sessionStorage.setItem("isAdmin", data.role === "admin");
-      sessionStorage.setItem("isSubadmin", data.role === "subadmin");
-      sessionStorage.setItem("adminToken", data.token);
-      sessionStorage.setItem("adminRole", data.role);
-      
-      // Redirect based on role
-      if (data.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (data.role === "subadmin") {
-        navigate("/admin/onlyblogreview");
-      } else {
-        throw new Error("Unauthorized access");
-      }
-  
-    } catch (error) {
-      setError(error.message === "Failed to fetch" 
-        ? "Cannot connect to server. Please try again later." 
-        : error.message);
-      console.error("Login error:", error);
-    } finally {
-      setIsLoading(false);
+  try {
+    // Use the login function from auth context
+    const result = await login(email, password, true);
+    
+    if (!result.success) {
+      throw new Error(result.message || "Login failed");
     }
-  };  
+
+    // Redirect based on role
+    if (result.role === "admin") {
+      navigate("/admin/dashboard");
+    } else if (result.role === "subadmin") {
+      navigate("/admin/onlyblogreview");
+    } else {
+      throw new Error("Unauthorized access");
+    }
+  } catch (error) {
+    setError(error.message === "Failed to fetch" 
+      ? "Cannot connect to server. Please try again later." 
+      : error.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">

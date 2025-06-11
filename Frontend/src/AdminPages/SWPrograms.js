@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import AdminTopbar from './AdminComponents/AdminTopbar';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,6 +18,8 @@ const SWPrograms = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, loading: authLoading, verifySession } = useAuth();
+  const navigate = useNavigate();
 
   const tabs = [
     { label: 'Dashboard', path: '/admin/dashboard' },
@@ -27,9 +31,48 @@ const SWPrograms = () => {
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
-  const getAuthToken = () => {
-    return localStorage.getItem('adminToken') || sessionStorage.getItem('adminToken');
-  };
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkAuthAndFetch = async () => {
+      try {
+        // First verify session
+        const isAuthenticated = await verifySession();
+        
+        if (!isAuthenticated || user?.role !== 'admin') {
+          if (isMounted) {
+            navigate("/admin/login");
+          }
+          return;
+        }
+
+        // Only fetch programs if authenticated and authorized
+        if (isMounted) {
+          setIsLoading(true);
+        }
+
+        await fetchPrograms();
+      } catch (err) {
+        if (isMounted) {
+          toast.error(err.message);
+          console.error('Error in checkAuthAndFetch:', err);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    // Only run if authLoading is false (auth state is initialized)
+    if (!authLoading) {
+      checkAuthAndFetch();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authLoading, user?.role, navigate]);
 
   const fetchPrograms = async () => {
     try {
@@ -43,17 +86,10 @@ const SWPrograms = () => {
       
       const data = await response.json();
       setPrograms(data.data);
-      setIsLoading(false);
     } catch (error) {
-      console.error('Error fetching programs:', error);
-      toast.error(error.message);
-      setIsLoading(false);
+      throw error;
     }
   };
-
-  useEffect(() => {
-    fetchPrograms();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,11 +98,6 @@ const SWPrograms = () => {
 
   const saveProgram = async () => {
     try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-
       // Prepare the data with proper date formatting
       const programData = {
         ...currentProgram,
@@ -86,8 +117,7 @@ const SWPrograms = () => {
       response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         credentials: 'include',
         body: JSON.stringify(programData)
@@ -131,16 +161,8 @@ const SWPrograms = () => {
     }
 
     try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-
       const response = await fetch(`${baseUrl}/api/programs/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         credentials: 'include'
       });
 
@@ -182,6 +204,28 @@ const SWPrograms = () => {
     setIsAdding(false);
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AdminTopbar tabs={tabs} />
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AdminTopbar tabs={tabs} />
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='bg-gradient-to-br from-amber-50 to-gray-200 min-h-screen'>
       <AdminTopbar tabs={tabs} />
@@ -189,12 +233,14 @@ const SWPrograms = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Summer and Winter Programs</h1>
-            <button 
-              onClick={startAddingProgram}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-            >
-              Add Program
-            </button>
+            {user?.role === 'admin' && (
+              <button 
+                onClick={startAddingProgram}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+              >
+                Add Program
+              </button>
+            )}
           </div>
           
           {/* Add/Edit Form */}
@@ -299,11 +345,7 @@ const SWPrograms = () => {
           )}
 
           {/* Programs List */}
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : programs.length === 0 ? (
+          {programs.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -336,20 +378,22 @@ const SWPrograms = () => {
                       <p><span className="font-medium">End:</span> {new Date(program.endDate).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-100 flex space-x-2 justify-end">
-                    <button
-                      onClick={() => startEditingProgram(program)}
-                      className="px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteProgram(program._id)}
-                      className="px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {user?.role === 'admin' && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 flex space-x-2 justify-end">
+                      <button
+                        onClick={() => startEditingProgram(program)}
+                        className="px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteProgram(program._id)}
+                        className="px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </motion.div>
               ))}
             </div>

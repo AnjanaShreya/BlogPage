@@ -6,7 +6,8 @@ const {
   signout, 
   verifyToken,
   requireAdmin ,
-  requireSubadmin
+  requireSubadmin,
+  verifySession
 } = require("../Controllers/authController");
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.post("/signup", signup);
 router.post("/signin", signin);
 router.post("/admin/signin", adminSignin);
 router.post("/signout", signout);
+router.get('/verify-session', verifySession);
 
 router.get("/admin/dashboard", verifyToken, requireAdmin, (req, res) => {
   res.json({ 

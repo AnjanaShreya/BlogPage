@@ -63,24 +63,22 @@ exports.signin = async (req, res) => {
     res.status(200).json({ 
       message: "Logged in successfully",
       role: user.role,
-      token // Optional: if you want to use it client-side
     });
   } catch (err) {
     res.status(500).json({ message: "Error in Signin" });
   }
 };
 
+// Verify Token Middleware - Updated with role
 exports.adminSignin = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // Verify admin or subadmin role
     if (user.role !== 'admin' && user.role !== 'subadmin') {
       return res.status(403).json({ message: "Admin or subadmin access required" });
     }
@@ -94,14 +92,13 @@ exports.adminSignin = async (req, res) => {
     res.status(200).json({ 
       message: "Logged in successfully",
       role: user.role,
-      token
+      userId: user._id 
     });
   } catch (err) {
     res.status(500).json({ message: "Error in Signin" });
   }
 };
 
-// Verify Token Middleware - Updated with role
 exports.verifyToken = (req, res, next) => {
   const token = req.cookies.token;
   
@@ -145,4 +142,29 @@ exports.signout = (req, res) => {
     secure: process.env.NODE_ENV === 'production',
   });
   res.status(200).json({ message: "Signed out successfully" });
+};
+
+exports.verifySession = async (req, res) => {
+  try {
+    const token = req.cookies.token;
+    
+    if (!token) {
+      return res.status(200).json({ isValid: false });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res.status(200).json({ isValid: false });
+    }
+
+    return res.status(200).json({ 
+      isValid: true,
+      userId: user._id,
+      role: user.role
+    });
+  } catch (err) {
+    return res.status(200).json({ isValid: false });
+  }
 };

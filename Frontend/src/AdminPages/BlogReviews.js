@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import AdminTopbar from './AdminComponents/AdminTopbar';
-import { FiLoader, FiAlertCircle } from 'react-icons/fi';
+import { FiLoader, FiAlertCircle, FiCheck } from 'react-icons/fi';
 import BlogCard from './AdminComponents/BlogCard';
 import BlogDetailModal from './AdminComponents/BlogDetailModal';
-import { FiCheck } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const BlogReview = () => {
   const [blogs, setBlogs] = useState([]);
@@ -14,6 +15,8 @@ const BlogReview = () => {
   const [actionType, setActionType] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [reviewComments, setReviewComments] = useState("");
+  const { user, loading: authLoading, verifySession } = useAuth();
+  const navigate = useNavigate();
 
   const tabs = [
     { label: 'Dashboard', path: '/admin/dashboard' },
@@ -26,43 +29,72 @@ const BlogReview = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
  
   useEffect(() => {
-    const fetchReviewBlogs = async () => {
+    let isMounted = true;
+
+    const checkAuthAndFetch = async () => {
       try {
-        setLoading(true);
+        // First verify session
+        const isAuthenticated = await verifySession();
+        
+        if (!isAuthenticated || user?.role !== 'admin') {
+          if (isMounted) {
+            navigate("/admin/login");
+          }
+          return;
+        }
+
+        // Only fetch blogs if authenticated and authorized
+        if (isMounted) {
+          setLoading(true);
+          setError(null);
+        }
+
         const response = await fetch(`${baseUrl}/api/blogs/review`, {
           method: "GET",
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
+            "Content-Type": "application/json"
           },
           credentials: 'include'
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch blogs needing revision');
+        if (isMounted) {
+          if (response.ok) {
+            const data = await response.json();
+            setBlogs(data.data || []);
+          } else if (response.status === 401) {
+            navigate("/admin/login");
+          } else {
+            throw new Error('Failed to fetch blogs needing revision');
+          }
         }
-
-        const data = await response.json();
-        setBlogs(data.data || []);
       } catch (err) {
-        setError(err.message);
-        console.error('Error fetching review blogs:', err);
+        if (isMounted) {
+          setError(err.message);
+          console.error('Error fetching review blogs:', err);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchReviewBlogs();
-  }, []);
+    // Only run if authLoading is false (auth state is initialized)
+    if (!authLoading) {
+      checkAuthAndFetch();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authLoading, user?.role, navigate, baseUrl]);
 
   const sendEmailNotification = async (email, subject, message) => {
     try {
       const response = await fetch(`${baseUrl}/api/email/send-email`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           to: email,
@@ -92,11 +124,10 @@ const BlogReview = () => {
       const response = await fetch(`${baseUrl}/api/blogs/approve/${blogId}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ 
-          adminId: localStorage.getItem("userId"),
+          adminId: user?.id,
           action: 'approve'
         }),
         credentials: 'include'
@@ -144,11 +175,10 @@ const BlogReview = () => {
       const response = await fetch(`${baseUrl}/api/blogs/reject/${blogId}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ 
-          adminId: localStorage.getItem("userId"),
+          adminId: user?.id,
           rejectionReason: rejectionReason.trim(),
           action: 'reject'
         }),
@@ -200,11 +230,10 @@ const BlogReview = () => {
       const response = await fetch(`${baseUrl}/api/blogs/request-revision/${blogId}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ 
-          adminId: localStorage.getItem("userId"),
+          adminId: user?.id,
           reviewComments: reviewComments.trim()
         }),
         credentials: 'include'
@@ -215,7 +244,6 @@ const BlogReview = () => {
         throw new Error(errorData.message || "Failed to request revision");
       }
 
-      // Remove the blog from the list since it's no longer pending
       setBlogs(blogs.filter(blog => blog._id !== blogId));
       setSelectedBlog(null);
       setReviewComments("");
@@ -236,6 +264,18 @@ const BlogReview = () => {
     setReviewComments("");
     setActionType(null);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AdminTopbar tabs={tabs} />
+        <div className="flex items-center justify-center h-64">
+          <FiLoader className="animate-spin text-4xl text-blue-500" />
+          <span className="ml-3 text-xl">Verifying session...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -265,7 +305,7 @@ const BlogReview = () => {
     <div className='bg-gradient-to-br from-amber-50 to-gray-200 min-h-screen'>
       <AdminTopbar tabs={tabs} />
       <div className="container mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Reviewed Blogs Pending for Approval</h1>
           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
             {blogs.length} pending
@@ -280,31 +320,30 @@ const BlogReview = () => {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        
-        {blogs.map(blog => (
-          <BlogCard 
-            key={blog._id}
-            blog={blog}
-            onView={() => setSelectedBlog(blog)}
-            onApprove={() => {
-              setSelectedBlog(blog);
-              setActionType('approve');
-            }}
-            onReject={() => {
-              setSelectedBlog(blog);
-              setActionType('reject');
-            }}
-            onRequestRevision={() => {
-              setSelectedBlog(blog);
-              setActionType('request-revision');
-            }}
-            isProcessing={isProcessing}
-            actionType={actionType}
-            showReviewComments={true}
-            showApproveOptions={true}
-          />
-        ))}
-        </div>
+            {blogs.map(blog => (
+              <BlogCard 
+                key={blog._id}
+                blog={blog}
+                onView={() => setSelectedBlog(blog)}
+                onApprove={() => {
+                  setSelectedBlog(blog);
+                  setActionType('approve');
+                }}
+                onReject={() => {
+                  setSelectedBlog(blog);
+                  setActionType('reject');
+                }}
+                onRequestRevision={() => {
+                  setSelectedBlog(blog);
+                  setActionType('request-revision');
+                }}
+                isProcessing={isProcessing}
+                actionType={actionType}
+                showReviewComments={true}
+                showApproveOptions={true}
+              />
+            ))}
+          </div>
         )}
 
         {selectedBlog && (
