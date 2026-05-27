@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaUniversity, FaGraduationCap } from "react-icons/fa";
 
 const Signup = ({ onClose, onLogin }) => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -72,28 +73,42 @@ const Signup = ({ onClose, onLogin }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-96 p-5 rounded-lg shadow-lg relative">
-        <h2 className="text-xl font-semibold mb-4 flex justify-center">
-          {isSignIn ? "Sign In" : "User Sign Up"}
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white w-[420px] p-8 md:p-10 rounded-md shadow-2xl relative border border-gray-100 font-sans animate-fade-in">
+        
+        {/* Close Button */}
+        <button
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors text-lg"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+
+        {/* Title */}
+        <h2 className="font-serif text-3xl text-[#002a32] font-semibold mb-2 text-center">
+          {isSignIn ? "Welcome Back" : "Create Account"}
         </h2>
 
-        <p className="text-sm text-black mb-4 text-center">
+        {/* Subtitle */}
+        <p className="text-sm text-gray-500 mb-6 text-center leading-relaxed px-4">
           {isSignIn
-            ? "Login to publish your blog here."
-            : "Create a user account"}
+            ? "Access your dashboard to manage and publish your legal insights."
+            : "Sign up to start contributing and publishing your legal insights."}
         </p>
 
+        {/* Error Alert */}
         {error && (
-          <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded">
+          <div className="mb-4 p-3 bg-red-50 text-red-700 text-xs font-semibold rounded-lg border border-red-100">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email Address */}
+          <div>
+            <label htmlFor="email" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              Email Address
             </label>
             <input
               type="email"
@@ -101,15 +116,23 @@ const Signup = ({ onClose, onLogin }) => {
               value={formData.email}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#002a32d5] focus:border-[#002a32d5]"
-              placeholder="Enter your email"
+              className="mt-1 block w-full px-4 py-3 border border-gray-200 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-[#002a32] focus:border-[#002a32] text-sm text-gray-800 placeholder-gray-400 bg-gray-50/50"
+              placeholder="e.g. counsel@legalwritings.com"
             />
           </div>
 
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
+          {/* Password */}
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label htmlFor="password" className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                Password
+              </label>
+              {isSignIn && (
+                <a href="/forgotPassword" className="text-xs font-bold text-[#b48e35] hover:text-[#917127] transition-colors">
+                  Forgot Password?
+                </a>
+              )}
+            </div>
             <input
               type="password"
               id="password"
@@ -117,14 +140,15 @@ const Signup = ({ onClose, onLogin }) => {
               onChange={handleChange}
               required
               minLength="6"
-              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#002a32d5] focus:border-[#002a32d5]"
-              placeholder="Enter your password"
+              className="mt-1 block w-full px-4 py-3 border border-gray-200 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-[#002a32] focus:border-[#002a32] text-sm text-gray-800 placeholder-gray-400 bg-gray-50/50"
+              placeholder="••••••••"
             />
           </div>
 
+          {/* Confirm Password (Sign Up Only) */}
           {!isSignIn && (
-            <div className="mb-4">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+            <div>
+              <label htmlFor="confirmPassword" className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                 Confirm Password
               </label>
               <input
@@ -134,36 +158,55 @@ const Signup = ({ onClose, onLogin }) => {
                 onChange={handleChange}
                 required
                 minLength="6"
-                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-[#002a32d5] focus:border-[#002a32d5]"
-                placeholder="Confirm your password"
+                className="mt-1 block w-full px-4 py-3 border border-gray-200 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-[#002a32] focus:border-[#002a32] text-sm text-gray-800 placeholder-gray-400 bg-gray-50/50"
+                placeholder="••••••••"
               />
             </div>
           )}
 
+          {/* Submit Button */}
           <button
             type="submit"
-            className="bg-[#002a32d5] text-white px-4 py-2 rounded-lg w-full"
+            className="bg-[#002a32] hover:bg-[#001a1f] text-white px-4 py-3.5 rounded w-full font-bold text-sm tracking-widest uppercase transition-colors shadow-md hover:shadow-lg mt-2"
           >
-            {isSignIn ? "Sign In" : "Sign Up"}
+            {isSignIn ? "SIGN IN" : "SIGN UP"}
           </button>
-
-          {isSignIn && (
-            <div className="text-center mt-1">
-              <a href="/forgotPassword" className="text-[#002a32d5] font-medium hover:underline">
-                Forgot Password?
-              </a>
-            </div>
-          )}
         </form>
 
-        <div className="mt-4 space-y-2">
-          <p className="text-sm text-center text-gray-500">
+        {/* Divider */}
+        <div className="relative flex py-5 items-center">
+          <div className="flex-grow border-t border-gray-150"></div>
+          <span className="flex-shrink mx-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">OR CONTINUE WITH</span>
+          <div className="flex-grow border-t border-gray-150"></div>
+        </div>
+
+        {/* Social Buttons */}
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            type="button"
+            className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-250 rounded text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <FaUniversity className="text-[#002a32]" size={14} />
+            <span>LinkedIn</span>
+          </button>
+          <button
+            type="button"
+            className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-250 rounded text-xs font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <FaGraduationCap className="text-[#002a32]" size={14} />
+            <span>Google</span>
+          </button>
+        </div>
+
+        {/* Toggle Form Footer */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-600">
             {isSignIn ? (
               <>
                 Don't have an account?{" "}
                 <span
                   onClick={toggleForm}
-                  className="text-[#002a32d5] cursor-pointer font-medium"
+                  className="text-[#002a32] cursor-pointer font-bold hover:underline ml-1"
                 >
                   Sign Up
                 </span>
@@ -173,7 +216,7 @@ const Signup = ({ onClose, onLogin }) => {
                 Already have an account?{" "}
                 <span
                   onClick={toggleForm}
-                  className="text-[#002a32d5] cursor-pointer font-medium"
+                  className="text-[#002a32] cursor-pointer font-bold hover:underline ml-1"
                 >
                   Sign In
                 </span>
@@ -182,12 +225,6 @@ const Signup = ({ onClose, onLogin }) => {
           </p>
         </div>
 
-        <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-          onClick={onClose}
-        >
-          ✖
-        </button>
       </div>
     </div>
   );

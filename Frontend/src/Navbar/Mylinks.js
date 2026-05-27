@@ -16,26 +16,14 @@ export const links = [
             { name: "Election laws", link: "/electionlaws" },
             { name: "Human Rights", link: "/humanrights" },
             { name: "Other Categories", link: "/othercategories" },
-            // { name: "All Blogs", link: "/allblogs" },
+            { name: "All Articles", link: "/allblogs" },
           ],
         },
       ],
     },
     {
-      name: "Oppertunities",
-      submenu: true,
-      sublinks: [
-        {
-          // Head: "Topwear",
-          sublink: [
-            { name: "Moot Courts", link: "/mootcourts" },
-            { name: "Panel Discussions", link: "/" },
-            { name: "Summer and Winter Programs", link: "/programssw" },
-            { name: "Book Reviews", link: "/" },
-            { name: "Opinions", link: "/" },
-          ],
-        },
-      ],
+      name: "Opportunities",
+      link: "/opportunities",
     },
   ];
   

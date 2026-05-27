@@ -4,7 +4,7 @@ import img2 from "../assets/img2.jpg";
 const NavBottom = ({ title, category, date }) => {
   return (
     <div className="relative overflow-hidden">
-      <img src={img2} alt="Hero" className="w-full h-72 object-cover" />
+      <img src={img2} alt="Hero" className="w-full h-64 object-cover" />
 
       {/* Overlay with Centered Text */}
       <div className="absolute inset-0 bg-black bg-opacity-50">
