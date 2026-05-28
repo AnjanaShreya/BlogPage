@@ -1,6 +1,5 @@
 import React from "react";
-import { FiX, FiCheck, FiEdit2, FiLoader, FiDownload } from "react-icons/fi";
-import { generateBlogPDF } from "./generateBlogPDF";
+import { FiX, FiCheck, FiEdit2, FiLoader, FiClock } from "react-icons/fi";
 
 const BlogDetailModal = ({
   blog,
@@ -15,216 +14,195 @@ const BlogDetailModal = ({
   onReject,
   isProcessing
 }) => {
-  const handleDownloadPDF = async () => {
-    try {
-      const pdf = await generateBlogPDF(blog);
-      pdf.save(`${blog.heading.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.pdf`);
-    } catch (error) {
-      console.error("PDF download failed:", error);
-      alert("Failed to generate PDF. Please try again.");
-    }
-  };
-
-  const handleDownloadText = () => {
-    try {
-      const content = `
-        ${blog.heading.toUpperCase()}
-        ${"=".repeat(blog.heading.length)}
-        
-        Author: ${blog.name}
-        University: ${blog.university}
-        Degree: ${blog.degree}
-        Year: ${blog.year}
-        Category: ${blog.category}
-        
-        ${"-".repeat(40)}
-        SHORT BIO
-        ${"-".repeat(40)}
-        ${blog.shortBio}
-        
-        ${"-".repeat(40)}
-        BLOG CONTENT
-        ${"-".repeat(40)}
-        ${blog.blogContent.replace(/<[^>]*>/g, "").replace(/\n{3,}/g, '\n\n')}
-      `;
-      
-      const blob = new Blob([content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${blog.heading.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error generating text file:", error);
-      alert("Failed to generate text file. Please try again.");
-    }
-  };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-2xl font-bold text-gray-800">{blog.heading}</h2>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleDownloadPDF}
-                className="flex items-center px-3 py-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition group"
-                title="Download as PDF"
-              >
-                <FiDownload className="mr-1 group-hover:scale-110 transition-transform" />
-                <span className="hidden sm:inline">PDF</span>
-              </button>
-              <button
-                onClick={handleDownloadText}
-                className="flex items-center px-3 py-1 bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition group"
-                title="Download as Text"
-              >
-                <FiDownload className="mr-1 group-hover:scale-110 transition-transform" />
-                <span className="hidden sm:inline">TXT</span>
-              </button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 md:p-6 z-[100] animate-in fade-in duration-200">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden relative">
+        
+        {/* Modal Header & Scrollable Content Wrapper */}
+        <div className="overflow-y-auto flex-grow">
+          <div className="p-6 md:p-8">
+            
+            {/* Header Area */}
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center gap-3">
+                <span className="bg-[#002a32] text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full tracking-wider uppercase">
+                  Review Mode
+                </span>
+                <span className="text-xs font-semibold text-gray-500 flex items-center gap-1.5">
+                  <FiClock />
+                  Submitted on {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
               <button
                 onClick={onClose}
-                className="p-1 text-gray-400 hover:text-gray-600 transition hover:bg-gray-100 rounded"
+                className="p-2 text-gray-400 hover:text-gray-800 transition hover:bg-gray-100 rounded-full"
                 title="Close"
               >
-                <FiX className="text-2xl" />
+                <FiX className="text-xl" />
               </button>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2">Author Information</h3>
-              <p className="text-gray-600"><span className="font-medium">Name:</span> {blog.name}</p>
-              <p className="text-gray-600"><span className="font-medium">University:</span> {blog.university}</p>
-              <p className="text-gray-600"><span className="font-medium">Degree:</span> {blog.degree}</p>
-              <p className="text-gray-600"><span className="font-medium">Year:</span> {blog.year}</p>
-              <p className="text-gray-600"><span className="font-medium">Email:</span> {blog.author?.email || "Not provided"}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-700 mb-2">Blog Details</h3>
-              <p className="text-gray-600"><span className="font-medium">Category:</span> {blog.category}</p>
-              <p className="text-gray-600"><span className="font-medium">Status:</span> <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span></p>
-              {blog.revisionCount > 0 && (
-                <p className="text-gray-600"><span className="font-medium">Revisions:</span> {blog.revisionCount}</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="mb-6">
-            <h3 className="font-semibold text-gray-700 mb-2">Short Bio</h3>
-            <p className="text-gray-600 bg-gray-50 p-4 rounded-lg">{blog.shortBio}</p>
-          </div>
-          
-          <div className="mb-6">
-            <h3 className="font-semibold text-gray-700 mb-2">Blog Content</h3>
-            <div 
-              className="prose max-w-none bg-gray-50 p-4 rounded-lg" 
-              dangerouslySetInnerHTML={{ __html: blog.blogContent }} 
-            />
-          </div>
-          
-          {actionType === 'request-revision' && (
+            
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#002a32] font-serif leading-tight mb-8">
+              {blog.heading}
+            </h2>
+
+            {/* AUTHOR INFORMATION */}
             <div className="mb-6">
-              <label className="block font-semibold text-gray-700 mb-2">Review Comments</label>
+              <h3 className="text-[10px] font-extrabold text-[#8C6D23] uppercase tracking-widest mb-3">Author Information</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 shadow-sm">
+                  <span className="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide">Full Name</span>
+                  <span className="font-semibold text-gray-800 text-sm">{blog.name || "N/A"}</span>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 shadow-sm">
+                  <span className="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide">University</span>
+                  <span className="font-semibold text-gray-800 text-sm truncate block" title={blog.university || "N/A"}>{blog.university || "N/A"}</span>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 shadow-sm">
+                  <span className="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide">Degree</span>
+                  <span className="font-semibold text-gray-800 text-sm">{blog.degree || "LLM"}</span>
+                </div>
+                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 shadow-sm">
+                  <span className="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide">Year</span>
+                  <span className="font-semibold text-gray-800 text-sm">{blog.year || "Final Year"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="w-full h-px bg-gray-100 mb-8"></div>
+
+            {/* SUBMISSION METADATA */}
+            <div className="mb-8">
+              <h3 className="text-xs font-extrabold text-[#8C6D23] uppercase tracking-widest mb-4">Submission Metadata</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 mb-6">
+                <div>
+                  <span className="block text-[11px] font-bold text-gray-400 mb-2">Category</span>
+                  <div className="flex gap-2 flex-wrap">
+                    <span className="bg-gray-100 text-gray-600 font-bold text-[10px] px-3 py-1.5 rounded uppercase tracking-wider">
+                      {blog.category || "General"}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold text-gray-400 mb-2">Current Status</span>
+                  <span className="text-[#8C6D23] font-bold text-sm flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full border-2 border-[#8C6D23]"></div>
+                    Pending Editorial Review
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <span className="block text-[11px] font-bold text-gray-400 mb-2">Short Bio</span>
+                <blockquote className="border-l-4 border-gray-200 pl-4 py-1 text-gray-600 italic text-sm">
+                  {blog.shortBio || "No bio provided by the author."}
+                </blockquote>
+              </div>
+            </div>
+
+            <div className="w-full h-px bg-gray-100 mb-8"></div>
+
+            {/* MANUSCRIPT CONTENT */}
+            <div>
+              <h3 className="text-xs font-extrabold text-[#8C6D23] uppercase tracking-widest mb-4">Manuscript Content</h3>
+              <div 
+                className="prose prose-sm md:prose-base max-w-none text-gray-700 bg-gray-50 p-6 md:p-8 rounded-xl border border-gray-100 leading-relaxed font-serif" 
+                dangerouslySetInnerHTML={{ __html: blog.blogContent }} 
+              />
+            </div>
+
+            {/* DEDICATED REVIEW EDITOR SECTION */}
+            <div className="mt-8 p-6 bg-[#8C6D23]/5 border border-[#8C6D23]/20 rounded-xl text-left space-y-4 shadow-inner">
+              <h3 className="text-xs font-extrabold text-[#002a32] uppercase tracking-wider flex items-center gap-2">
+                <FiEdit2 className="text-[#8C6D23]" />
+                <span>Write Editorial Review & Feedback</span>
+              </h3>
               <textarea
                 value={reviewComments}
                 onChange={onReviewCommentsChange}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-200 rounded-lg p-4 bg-white focus:ring-1 focus:ring-[#002a32] focus:border-[#002a32] outline-none transition text-sm font-sans text-gray-700"
                 rows="4"
-                placeholder="Please provide detailed comments for revision (minimum 10 characters)..."
+                placeholder="Enter detailed editorial corrections, annotations, and constructive feedback for the author (minimum 10 characters)..."
               />
-              {reviewComments.length > 0 && reviewComments.length < 10 && (
-                <p className="mt-1 text-sm text-red-500">Comments must be at least 10 characters</p>
-              )}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={onRequestRevision}
+                  disabled={!reviewComments || reviewComments.trim().length < 10 || isProcessing}
+                  className="px-6 py-2.5 bg-[#002a32] hover:bg-[#003d49] text-[#ecc260] font-bold text-xs rounded-lg transition disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-sm"
+                >
+                  {isProcessing && actionType === 'request-revision' ? (
+                    <FiLoader className="animate-spin text-sm" />
+                  ) : (
+                    <FiEdit2 className="text-sm" />
+                  )}
+                  <span>Send Review & Request Revision</span>
+                </button>
+              </div>
             </div>
-          )}
-          
-          {actionType === 'reject' && (
-            <div className="mb-6">
-              <label className="block font-semibold text-gray-700 mb-2">Rejection Reason</label>
-              <textarea
-                value={rejectionReason}
-                onChange={onRejectionReasonChange}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows="4"
-                placeholder="Please provide a detailed reason for rejection (minimum 10 characters)..."
-              />
-              {rejectionReason.length > 0 && rejectionReason.length < 10 && (
-                <p className="mt-1 text-sm text-red-500">Reason must be at least 10 characters</p>
-              )}
-            </div>
-          )}
-          
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
-            >
-              Cancel
-            </button>
             
-            {actionType === 'request-revision' ? (
-              <button
-                onClick={onRequestRevision}
-                disabled={!reviewComments || reviewComments.trim().length < 10 || isProcessing}
-                className={`px-4 py-2 rounded-lg text-white transition ${
-                  !reviewComments || reviewComments.trim().length < 10 || isProcessing
-                    ? "bg-yellow-300 cursor-not-allowed"
-                    : "bg-yellow-600 hover:bg-yellow-700"
-                }`}
-              >
-                {isProcessing ? (
-                  <>
-                    <FiLoader className="animate-spin inline mr-2" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <FiEdit2 className="inline mr-2" />
-                    Request Review
-                  </>
-                )}
-              </button>
-            ) : actionType === 'reject' ? (
-              <button
-                onClick={onReject}
-                disabled={!rejectionReason || rejectionReason.trim().length < 10 || isProcessing}
-                className={`px-4 py-2 rounded-lg text-white transition ${
-                  !rejectionReason || rejectionReason.trim().length < 10 || isProcessing
-                    ? "bg-red-300 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-              >
-                {isProcessing ? (
-                  <>
-                    <FiLoader className="animate-spin inline mr-2" />
-                    Processing...
-                  </>
-                ) : (
-                  "Confirm Rejection"
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={onApprove}
-                disabled={isProcessing}
-                className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition disabled:opacity-50"
-              >
-                {isProcessing ? (
-                  <FiLoader className="animate-spin mr-2" />
-                ) : (
-                  <FiCheck className="mr-2" />
-                )}
-                Approve
-              </button>
+            {actionType === 'reject' && (
+              <div className="mt-8 p-6 bg-red-50/50 border border-red-100 rounded-xl">
+                <label className="block font-bold text-red-800 mb-2 text-sm">Reason for Rejection</label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={onRejectionReasonChange}
+                  className="w-full border border-red-200 rounded-lg p-4 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition text-sm"
+                  rows="4"
+                  placeholder="Please provide a detailed reason for rejection (minimum 10 characters)..."
+                />
+              </div>
             )}
           </div>
         </div>
+
+        {/* FIXED FOOTER */}
+        <div className="flex-shrink-0 bg-white border-t border-gray-100 p-4 md:p-6 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-10">
+          
+          {actionType === 'reject' ? (
+            <div className="flex justify-end gap-4">
+              <button onClick={onClose} className="px-6 py-2.5 font-bold text-gray-500 hover:bg-gray-50 rounded-lg transition" disabled={isProcessing}>Cancel</button>
+              <button
+                onClick={onReject}
+                disabled={!rejectionReason || rejectionReason.trim().length < 10 || isProcessing}
+                className="flex items-center justify-center px-8 py-2.5 bg-[#d93025] hover:bg-[#b0261d] text-white font-bold rounded-lg transition disabled:opacity-50 cursor-pointer"
+              >
+                {isProcessing ? <FiLoader className="animate-spin mr-2" /> : <FiX className="mr-2" />}
+                Confirm Rejection
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              
+              {/* Left Actions */}
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                {/* Reject */}
+                <button
+                  onClick={onReject}
+                  disabled={isProcessing}
+                  className="flex-1 sm:flex-none flex items-center justify-center px-6 py-3 bg-[#d93025] hover:bg-[#b0261d] text-white font-bold rounded-lg transition shadow-sm text-sm cursor-pointer"
+                >
+                  <FiX className="mr-2 text-lg" />
+                  Reject Submission
+                </button>
+              </div>
+              
+              {/* Right Actions */}
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                {/* Approve */}
+                <button
+                  onClick={onApprove}
+                  disabled={isProcessing}
+                  className="flex-1 sm:flex-none flex items-center justify-center px-8 py-3 bg-[#002a32] hover:bg-[#003d49] text-white font-bold rounded-lg transition shadow-sm text-sm cursor-pointer"
+                >
+                  <FiCheck className="mr-2 text-lg" />
+                  Approve & Publish
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        
       </div>
     </div>
   );

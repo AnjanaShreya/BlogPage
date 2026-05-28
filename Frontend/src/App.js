@@ -19,6 +19,7 @@ import ReviewSubmission from './AdminPages/ReviewSubmission';
 import OnlyBlogReview from './AdminPages/SubAdmin/OnlyBlogReview';
 import SAApprove from './AdminPages/SubAdmin/SAApprove';
 import SAReviews from './AdminPages/SubAdmin/SAReviews';
+import Settings from './AdminPages/Settings';
 import { AuthProvider } from './context/AuthContext';
 
 
@@ -105,6 +106,12 @@ function App() {
               // <SubAdminRoute>
               <SAReviews />
               // </SubAdminRoute>
+            } />
+
+            <Route path="/admin/settings" element={
+              // <AdminRoute>
+              <Settings />
+              // </AdminRoute>
             } />
           </Routes>
         </div>

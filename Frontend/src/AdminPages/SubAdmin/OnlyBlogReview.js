@@ -1,19 +1,12 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import AdminTopbar from '../AdminComponents/AdminTopbar';
+import AdminLayout from '../AdminComponents/AdminLayout';
+import { FaCheckCircle, FaEdit, FaChartBar, FaAngleRight } from 'react-icons/fa';
 
 const OnlyBlogReview = () => {
   const navigate = useNavigate();
   const [pendingBlogs, setPendingBlogs] = useState(0);
   const [pendingReviewBlogs, setPendingReviewBlogs] = useState(0);
-
-  const tabs = [
-    { label: 'Dashboard', path: '/admin/onlyblogreview' },
-    { label: 'First Submission', path: '/admin/subadminaprroval' },
-    { label: 'Blog Reviews', path: '/admin/subadminreviews' },
-  ];
-
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
@@ -29,16 +22,11 @@ const OnlyBlogReview = () => {
       }
     };
 
-    // Update your fetchStats function
     const fetchStats = async () => {
       try {
         const [blogsRes, reviewRes] = await Promise.all([
-          fetch(`${baseUrl}/api/blogs/count/pending`, {
-            credentials: 'include' // Needed if using session cookies
-          }),
-          fetch(`${baseUrl}/api/blogs/count/review`, {
-            credentials: 'include' // Needed if using session cookies
-          })
+          fetch(`${baseUrl}/api/blogs/count/pending`, { credentials: 'include' }),
+          fetch(`${baseUrl}/api/blogs/count/review`, { credentials: 'include' })
         ]);
       
         const blogsData = await blogsRes.json();
@@ -51,78 +39,99 @@ const OnlyBlogReview = () => {
       }
     };
     
-        verifyAdmin();
-        fetchStats();
-  }, [navigate]);
+    verifyAdmin();
+    fetchStats();
+  }, [navigate, baseUrl]);
 
   return (
-    <div className="h-screen bg-gradient-to-br from-amber-50 to-gray-200">
-      <AdminTopbar tabs={tabs} />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Subadmin Dashboard</h1>
-          <p className="mt-2 text-lg text-gray-600">
-            Manage blog submissions and reviews
-          </p>
+    <AdminLayout>
+      <main className="flex-grow overflow-y-auto p-6 md:p-8 space-y-6 bg-[#F9FAFB]">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="bg-[#002a32] text-white text-xs font-bold px-3 py-1 rounded-full tracking-wider">Subadmin Portal</span>
+              <span className="text-xs font-semibold text-gray-500">LexScripta Board</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-[#002a32] font-serif tracking-tight">Subadmin Dashboard</h1>
+            <p className="text-gray-500 font-medium max-w-4xl mt-3 leading-relaxed text-sm">
+              Review and audit newly submitted publications and coordinate critical peer review comments.
+            </p>
+          </div>
         </div>
 
+        {/* Dashboard Cards grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link 
             to="/admin/subadminaprroval" 
-            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-200 hover:border-blue-500"
+            className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex items-start justify-between group"
           >
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-blue-100 p-3 rounded-full">
-                <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 bg-[#E0F2F1] text-[#004D40] p-4 rounded-xl text-xl">
+                <FaCheckCircle />
               </div>
-              <div className="ml-4">
-                <h2 className="text-lg font-medium text-gray-900">First Submission</h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Review and approve initial blog submissions
+              <div>
+                <h2 className="text-lg font-bold text-[#002a32] font-serif">First Submission</h2>
+                <p className="mt-1.5 text-xs text-gray-400 font-semibold leading-relaxed">
+                  Review and audit initial incoming student & expert blog submissions.
                 </p>
+                <div className="mt-4 inline-flex items-center text-xs font-bold text-[#004D40] gap-1">
+                  <span>Open Submissions</span>
+                  <FaAngleRight className="transition-transform group-hover:translate-x-1" />
+                </div>
               </div>
             </div>
           </Link>
 
           <Link 
             to="/admin/subadminreviews" 
-            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-200 hover:border-green-500"
+            className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm hover:shadow-md transition-all duration-300 flex items-start justify-between group"
           >
-            <div className="flex items-center">
-              <div className="flex-shrink-0 bg-green-100 p-3 rounded-full">
-                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
+            <div className="flex gap-4">
+              <div className="flex-shrink-0 bg-[#8C6D23]/10 text-[#8C6D23] p-4 rounded-xl text-xl">
+                <FaEdit />
               </div>
-              <div className="ml-4">
-                <h2 className="text-lg font-medium text-gray-900">Blog Reviews</h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Manage all blog reviews and feedback
+              <div>
+                <h2 className="text-lg font-bold text-[#002a32] font-serif">Blog Reviews</h2>
+                <p className="mt-1.5 text-xs text-gray-400 font-semibold leading-relaxed">
+                  Manage ongoing reviews and annotated feedback requests for revision.
                 </p>
+                <div className="mt-4 inline-flex items-center text-xs font-bold text-[#8C6D23] gap-1">
+                  <span>Open Active Reviews</span>
+                  <FaAngleRight className="transition-transform group-hover:translate-x-1" />
+                </div>
               </div>
             </div>
           </Link>
         </div>
 
-        <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Stats</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-              <p className="text-sm font-medium text-blue-800">Pending Approvals</p>
-              <p className="mt-1 text-2xl font-bold text-blue-600">{pendingBlogs}</p>
+        {/* Quick Stats Banner */}
+        <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500">
+              <FaChartBar className="text-sm" />
             </div>
-            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-              <p className="text-sm font-medium text-green-800">Reviews Completed</p>
-              <p className="mt-1 text-2xl font-bold text-green-600">{pendingReviewBlogs}</p>
+            <div>
+              <h3 className="text-sm font-bold text-[#002a32] uppercase tracking-wider">Live Metrics</h3>
+              <p className="text-[10px] text-gray-400 font-semibold">Real-time statistics of submissions</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-emerald-50/50 border border-emerald-100 p-5 rounded-2xl">
+              <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-widest block">Pending Approvals</span>
+              <span className="mt-2 text-4xl font-extrabold text-emerald-700 block">{pendingBlogs}</span>
+            </div>
+            <div className="bg-amber-50/50 border border-amber-100 p-5 rounded-2xl">
+              <span className="text-xs font-extrabold text-amber-800 uppercase tracking-widest block">Reviews Requiring Attention</span>
+              <span className="mt-2 text-4xl font-extrabold text-amber-700 block">{pendingReviewBlogs}</span>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+
+      </main>
+    </AdminLayout>
   );
 };
 
