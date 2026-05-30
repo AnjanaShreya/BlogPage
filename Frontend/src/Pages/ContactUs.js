@@ -232,8 +232,8 @@ const ContactUs = () => {
                 <div
                   key={index}
                   className={`border rounded-xl overflow-hidden transition-all duration-300 ${isExpanded
-                      ? "border-[#002a32]/35 shadow-[0_4px_20px_rgba(0,42,50,0.05)] bg-[#fdfeff]"
-                      : "border-gray-200/70 hover:border-gray-300 shadow-sm bg-white"
+                    ? "border-[#002a32]/35 shadow-[0_4px_20px_rgba(0,42,50,0.05)] bg-[#fdfeff]"
+                    : "border-gray-200/70 hover:border-gray-300 shadow-sm bg-white"
                     }`}
                 >
                   <button

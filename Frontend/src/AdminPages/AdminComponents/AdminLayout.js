@@ -14,12 +14,13 @@ import {
   FaSignOutAlt, 
   FaBell, 
   FaQuestionCircle,
+  FaClipboardList
 } from 'react-icons/fa';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   
   const [showHelp, setShowHelp] = useState(false);
   const [activeHelpTab, setActiveHelpTab] = useState('overview');
@@ -29,20 +30,47 @@ const AdminLayout = ({ children }) => {
     navigate('/admin/login');
   };
 
-  const isSubAdmin = location.pathname.includes('subadmin') || location.pathname.includes('onlyblogreview');
+  const currentRole = user?.role || (location.pathname.includes('subadmin') || location.pathname.includes('onlyblogreview') ? 'Blog Reviewer' : 'Chief Editor');
 
-  // Sidebar Links Navigation Items
-  const sidebarLinks = isSubAdmin ? [
-    { label: 'Dashboard', icon: <FaChartLine />, path: '/admin/onlyblogreview' },
-    { label: 'First Submission', icon: <FaCheckCircle />, path: '/admin/subadminaprroval' },
-    { label: 'Blog Reviews', icon: <FaEdit />, path: '/admin/subadminreviews' },
-  ] : [
-    { label: 'Dashboard', icon: <FaChartLine />, path: '/admin/dashboard' },
-    { label: 'Approvals', icon: <FaCheckCircle />, path: '/admin/approveblogs' },
-    { label: 'Reviews', icon: <FaEdit />, path: '/admin/reviewblogs' },
-    { label: 'Events', icon: <FaCalendarAlt />, path: '/admin/swprograms' },
-    { label: 'Settings', icon: <FaCog />, path: '/admin/settings' },
-  ];
+  // Build dynamic sidebar items based on role
+  let sidebarLinks = [];
+  
+  if (currentRole === 'admin' || currentRole === 'Chief Editor') {
+     sidebarLinks = [
+       { label: 'Dashboard', icon: <FaChartLine />, path: '/admin/dashboard' },
+       { label: 'Approvals', icon: <FaCheckCircle />, path: '/admin/approveblogs' },
+       { label: 'Reviews', icon: <FaEdit />, path: '/admin/reviewblogs' },
+       { label: 'Moot Court', icon: <FaGavel className="text-gray-400" />, path: '/admin/mootcourt' },
+       { label: 'Internships', icon: <FaClipboardList className="text-gray-400" />, path: '/admin/internships' },
+       { label: 'Events', icon: <FaCalendarAlt />, path: '/admin/swprograms' },
+       { label: 'Settings', icon: <FaCog />, path: '/admin/settings' },
+     ];
+  } else if (currentRole === 'subadmin' || currentRole === 'Blog Reviewer') {
+    sidebarLinks = [
+      { label: 'Dashboard', icon: <FaChartLine />, path: '/admin/onlyblogreview' },
+      { label: 'First Submission', icon: <FaCheckCircle />, path: '/admin/subadminaprroval' },
+      { label: 'Blog Reviews', icon: <FaEdit />, path: '/admin/subadminreviews' },
+    ];
+  } else if (currentRole === 'Moot Coordinator') {
+    sidebarLinks = [
+      { label: 'Dashboard', icon: <FaChartLine />, path: '/admin/dashboard' },
+      { label: 'Moot Court', icon: <FaGavel className="text-gray-400" />, path: '/admin/mootcourt' },
+    ];
+  } else if (currentRole === 'Academic Coordinator' || currentRole === 'Events Coordinator') {
+    sidebarLinks = [
+      { label: 'Dashboard', icon: <FaChartLine />, path: '/admin/dashboard' },
+      { label: 'Events', icon: <FaCalendarAlt />, path: '/admin/swprograms' },
+    ];
+  } else if (currentRole === 'Internships Coordinator') {
+    sidebarLinks = [
+      { label: 'Dashboard', icon: <FaChartLine />, path: '/admin/dashboard' },
+      { label: 'Internships', icon: <FaClipboardList className="text-gray-400" />, path: '/admin/internships' },
+    ];
+  } else {
+    sidebarLinks = [
+      { label: 'Dashboard', icon: <FaChartLine />, path: '/admin/dashboard' },
+    ];
+  }
 
   // Email First Letter setup
   const adminEmail = localStorage.getItem("adminEmail") || "Admin";

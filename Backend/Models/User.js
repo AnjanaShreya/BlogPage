@@ -15,8 +15,17 @@ const userSchema = new mongoose.Schema({
   role: { 
     type: String, 
     required: true,
-    enum: ['admin', 'user', 'subadmin'],
+    enum: ['admin', 'user', 'subadmin', 'Chief Editor', 'Blog Reviewer', 'Moot Coordinator', 'Academic Coordinator', 'Events Coordinator', 'Internships Coordinator'],
     default: 'user'
+  },
+  status: {
+    type: String,
+    enum: ['Active', 'Pending Invite'],
+    default: 'Active'
+  },
+  inviteToken: {
+    type: String,
+    default: null
   },
   createdAt: {
     type: Date,

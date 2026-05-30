@@ -7,7 +7,11 @@ const {
   verifyToken,
   requireAdmin ,
   requireSubadmin,
-  verifySession
+  verifySession,
+  createSubAdmin,
+  getSubAdmins,
+  deleteSubAdmin,
+  setupPassword
 } = require("../Controllers/authController");
 
 const router = express.Router();
@@ -35,5 +39,10 @@ router.get("/admin/onlyblogreview", verifyToken, requireSubadmin, (req, res) => 
     }
   });
 });
+
+router.post("/admin/create-subadmin", verifyToken, requireAdmin, createSubAdmin);
+router.get("/admin/subadmins", verifyToken, requireAdmin, getSubAdmins);
+router.delete("/admin/subadmins/:id", verifyToken, requireAdmin, deleteSubAdmin);
+router.post("/admin/setup-password", setupPassword);
 
 module.exports = router;

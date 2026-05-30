@@ -1,119 +1,104 @@
-const Program = require('../Models/Program');
+const Internship = require('../Models/Internship');
+const mongoose = require('mongoose');
 
-// Get all programs
-exports.getAllPrograms = async (req, res) => {
+// Get all internships
+exports.getAllInternships = async (req, res) => {
   try {
-    const programs = await Program.find().sort({ startDate: 1 });
-    
+    const internships = await Internship.find().sort({ startDate: 1 });
     res.status(200).json({
       success: true,
-      data: programs
+      data: internships
     });
   } catch (err) {
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch programs',
+      message: 'Failed to fetch internships',
       error: err.message
     });
   }
 };
 
-// Create a new program
-exports.createProgram = async (req, res) => {
+// Create a new internship
+exports.createInternship = async (req, res) => {
   try {
-    // Convert string dates to Date objects
-    const programData = {
+    const internshipData = {
       ...req.body,
       startDate: new Date(req.body.startDate),
       endDate: new Date(req.body.endDate)
     };
 
-    const program = new Program(programData);
-    const savedProgram = await program.save();
+    const internship = new Internship(internshipData);
+    const savedInternship = await internship.save();
     
     res.status(201).json({
       success: true,
-      data: savedProgram
+      data: savedInternship
     });
   } catch (err) {
     res.status(400).json({
       success: false,
-      message: 'Failed to create program',
-      error: err.message,
-      errors: err.errors ? Object.values(err.errors).map(e => e.message) : undefined
-    });
-  }
-};
-
-exports.updateProgram = async (req, res) => {
-  
-  try {
-    const updatedProgram = await Program.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!updatedProgram) {
-      return res.status(404).json({
-        success: false,
-        message: 'Program not found'
-      });
-    }
-    res.status(200).json({
-      success: true,
-      message: 'Program updated successfully',
-      data: updatedProgram
-    });
-  } catch (error) {
-    console.error('Error updating program:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update program',
-      error: error.message
-    });
-  }
-};
-
-
-// Delete a program
-exports.deleteProgram = async (req, res) => {
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid program ID format'
-      });
-    }
-
-    const deletedProgram = await Program.findByIdAndDelete(req.params.id);
-    
-    if (!deletedProgram) {
-      return res.status(404).json({
-        success: false,
-        message: 'Program not found'
-      });
-    }
-    
-    res.status(200).json({
-      success: true,
-      message: 'Program deleted successfully'
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to delete program',
+      message: 'Failed to create internship',
       error: err.message
     });
   }
 };
 
-exports.getUpcomingProgramCount = async (req, res) => {
+// Update an internship
+exports.updateInternship = async (req, res) => {
   try {
-    const today = new Date();
-    const count = await Program.countDocuments({ startDate: { $gt: today } });
-    res.status(200).json({ count });
+    const updatedInternship = await Internship.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!updatedInternship) {
+      return res.status(404).json({
+        success: false,
+        message: 'Internship not found'
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Internship updated successfully',
+      data: updatedInternship
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching upcoming programs', error: error.message });
+    console.error('Error updating internship:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update internship',
+      error: error.message
+    });
+  }
+};
+
+// Delete an internship
+exports.deleteInternship = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid internship ID format'
+      });
+    }
+
+    const deletedInternship = await Internship.findByIdAndDelete(req.params.id);
+    if (!deletedInternship) {
+      return res.status(404).json({
+        success: false,
+        message: 'Internship not found'
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Internship deleted successfully'
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete internship',
+      error: err.message
+    });
   }
 };
 
@@ -130,15 +115,15 @@ exports.updateApplicationStatus = async (req, res) => {
       });
     }
 
-    const program = await Program.findById(id);
-    if (!program) {
+    const internship = await Internship.findById(id);
+    if (!internship) {
       return res.status(404).json({
         success: false,
-        message: 'Internship program not found'
+        message: 'Internship not found'
       });
     }
 
-    const application = program.applications.id(appId);
+    const application = internship.applications.id(appId);
     if (!application) {
       return res.status(404).json({
         success: false,
@@ -147,12 +132,12 @@ exports.updateApplicationStatus = async (req, res) => {
     }
 
     application.status = status;
-    await program.save();
+    await internship.save();
 
     res.status(200).json({
       success: true,
       message: `Successfully set application status to ${status}`,
-      data: program
+      data: internship
     });
   } catch (error) {
     console.error('Error in updateApplicationStatus:', error);
@@ -164,8 +149,8 @@ exports.updateApplicationStatus = async (req, res) => {
   }
 };
 
-// Candidate applying to a program
-exports.applyToProgram = async (req, res) => {
+// Candidate applying to an internship
+exports.applyToInternship = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, college, skills, whyInterested, resumeLink } = req.body;
@@ -177,15 +162,14 @@ exports.applyToProgram = async (req, res) => {
       });
     }
 
-    const program = await Program.findById(id);
-    if (!program) {
+    const internship = await Internship.findById(id);
+    if (!internship) {
       return res.status(404).json({
         success: false,
-        message: 'Program not found'
+        message: 'Internship not found'
       });
     }
 
-    // Add candidate application
     const newApplication = {
       name,
       email,
@@ -196,16 +180,16 @@ exports.applyToProgram = async (req, res) => {
       status: 'Pending'
     };
 
-    program.applications.push(newApplication);
-    const updatedProgram = await program.save();
+    internship.applications.push(newApplication);
+    const updatedInternship = await internship.save();
 
     res.status(200).json({
       success: true,
       message: 'Application submitted successfully',
-      data: updatedProgram
+      data: updatedInternship
     });
   } catch (error) {
-    console.error('Error applying to program:', error);
+    console.error('Error applying to internship:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to submit application',

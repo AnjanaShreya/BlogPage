@@ -9,7 +9,7 @@ const BlogActionButtons = ({
   onRequestRevision,
   isProcessing,
   actionType,
-  showReviewButton = true,
+  showReviewButton = false,
   showApproveOptions = true
 }) => {
   return (

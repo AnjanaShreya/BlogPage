@@ -8,7 +8,10 @@ const transporter = nodemailer.createTransport({
     user: process.env.YAHOO_EMAIL,
     pass: process.env.YAHOO_APP_PASSWORD
   },
-  debug: true
+  debug: true,
+  connectionTimeout: 5000,
+  greetingTimeout: 5000,
+  socketTimeout: 5000
 });
 
 const sendEmail = async (req, res) => {
@@ -16,7 +19,7 @@ const sendEmail = async (req, res) => {
     const { to, subject, text } = req.body;
 
     const mailOptions = {
-      from: `Blog Platform <${process.env.YAHOO_EMAIL}>`,
+      from: process.env.YAHOO_EMAIL,
       to,
       subject,
       text,

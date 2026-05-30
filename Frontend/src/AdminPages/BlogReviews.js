@@ -21,7 +21,7 @@ const BlogReview = () => {
   const [actionType, setActionType] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const blogsPerPage = 4;
-  
+
   const navigate = useNavigate();
   const { user, loading: authLoading, verifySession } = useAuth();
 
@@ -44,7 +44,7 @@ const BlogReview = () => {
   const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
   const currentBlogs = filteredAndSortedBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
   const totalPages = Math.ceil(filteredAndSortedBlogs.length / blogsPerPage);
-  
+
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -64,7 +64,7 @@ const BlogReview = () => {
       try {
         // First verify session
         const isAuthenticated = await verifySession();
-        
+
         if (!isAuthenticated || user?.role !== 'admin') {
           if (isMounted) {
             navigate("/admin/login");
@@ -183,7 +183,7 @@ const BlogReview = () => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           adminId: user?.id,
           action: 'approve'
         }),
@@ -196,7 +196,7 @@ const BlogReview = () => {
       }
 
       const approvedBlog = blogs.find(blog => blog._id === blogId);
-      
+
       if (approvedBlog && approvedBlog.author && approvedBlog.author.email) {
         const subject = "Your Blog Has Been Approved";
         const message = `Dear ${approvedBlog.name},\n\n` +
@@ -204,7 +204,7 @@ const BlogReview = () => {
           `You can now view it on our website.\n\n` +
           `Thank you for your contribution!\n\n` +
           `Best regards,\nThe Blog Team`;
-        
+
         await sendEmailNotification(approvedBlog.author.email, subject, message);
       }
 
@@ -234,7 +234,7 @@ const BlogReview = () => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           adminId: user?.id,
           rejectionReason: rejectionReason.trim(),
           action: 'reject'
@@ -248,7 +248,7 @@ const BlogReview = () => {
       }
 
       const rejectedBlog = blogs.find(blog => blog._id === blogId);
-      
+
       if (rejectedBlog && rejectedBlog.author && rejectedBlog.author.email) {
         const subject = "Update on Your Blog Submission";
         const message = `Dear ${rejectedBlog.name},\n\n` +
@@ -257,7 +257,7 @@ const BlogReview = () => {
           `You may submit a new blog for consideration.\n\n` +
           `Thank you for your understanding.\n\n` +
           `Best regards,\nThe Blog Team`;
-        
+
         await sendEmailNotification(rejectedBlog.author.email, subject, message);
       }
 
@@ -283,13 +283,13 @@ const BlogReview = () => {
     try {
       setIsProcessing(true);
       setActionType('request-revision');
-      
+
       const response = await fetch(`${baseUrl}/api/blogs/request-revision/${blogId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           adminId: user?.id,
           reviewComments: reviewComments.trim()
         }),
@@ -304,7 +304,7 @@ const BlogReview = () => {
       setBlogs(blogs.filter(blog => blog._id !== blogId));
       setSelectedBlog(null);
       setReviewComments("");
-      
+
       alert("Revision requested successfully! The author has been notified.");
     } catch (error) {
       console.error("Error requesting revision:", error);
@@ -358,7 +358,7 @@ const BlogReview = () => {
   return (
     <AdminLayout>
       <main className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6 bg-[#F9FAFB]">
-        
+
         {/* Page Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-6">
           <div>
@@ -385,7 +385,7 @@ const BlogReview = () => {
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
               Filter by:
             </span>
-            <select 
+            <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
               className="bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-md focus:ring-[#002a32] focus:border-[#002a32] block p-1.5 font-bold outline-none cursor-pointer max-w-[200px]"
@@ -404,7 +404,7 @@ const BlogReview = () => {
               <option value="Corporate Law">Corporate Law</option>
               <option value="Criminal Law">Criminal Law</option>
             </select>
-            <select 
+            <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
               className="bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-md focus:ring-[#002a32] focus:border-[#002a32] block p-1.5 font-bold outline-none cursor-pointer"
@@ -413,9 +413,9 @@ const BlogReview = () => {
               <option value="Oldest First">Oldest First</option>
             </select>
           </div>
-          
+
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-            <button 
+            <button
               onClick={() => {
                 setFilterCategory("All Categories");
                 setAppliedFilterCategory("All Categories");
@@ -427,7 +427,7 @@ const BlogReview = () => {
             >
               Clear Filters
             </button>
-            <button 
+            <button
               onClick={() => {
                 setAppliedFilterCategory(filterCategory);
                 setAppliedSortOrder(sortOrder);
@@ -452,7 +452,7 @@ const BlogReview = () => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
             <h2 className="text-xl font-bold text-gray-800 mb-2">No matching submissions</h2>
             <p className="text-gray-500 font-medium text-sm mb-4">No pending blogs fit the selected filter criteria.</p>
-            <button 
+            <button
               onClick={() => {
                 setFilterCategory("All Categories");
                 setAppliedFilterCategory("All Categories");
@@ -495,27 +495,26 @@ const BlogReview = () => {
         {totalPages > 1 && (
           <div className="flex justify-center mt-12 mb-8">
             <div className="flex items-center gap-2 bg-white rounded-xl shadow-sm border border-gray-100 p-2">
-              <button 
+              <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-[#002a32] hover:bg-gray-50 transition disabled:opacity-50 cursor-pointer"
               >&lt;</button>
-              
+
               {[...Array(totalPages)].map((_, i) => (
-                <button 
+                <button
                   key={i}
                   onClick={() => paginate(i + 1)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold transition cursor-pointer ${
-                    currentPage === i + 1 
-                      ? 'bg-[#002a32] text-white' 
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg font-bold transition cursor-pointer ${currentPage === i + 1
+                      ? 'bg-[#002a32] text-white'
                       : 'text-gray-500 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   {i + 1}
                 </button>
               ))}
 
-              <button 
+              <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-[#002a32] hover:bg-gray-50 transition disabled:opacity-50 cursor-pointer"

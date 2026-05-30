@@ -5,7 +5,7 @@ import AdminLayout from './AdminComponents/AdminLayout';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { motion } from 'framer-motion';
-import { FiLoader, FiCalendar, FiClock, FiPlus } from 'react-icons/fi';
+import { FiLoader, FiPlus } from 'react-icons/fi';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -43,12 +43,9 @@ const SWPrograms = () => {
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   const eventTabs = [
-    { id: 'all', label: 'All Programs' },
+    { id: 'all', label: 'All Cycles' },
     { id: 'summer', label: 'Summer Cycle' },
-    { id: 'winter', label: 'Winter Cycle' },
-    { id: 'mootcourt', label: 'Moot Courts' },
-    { id: 'internship', label: 'Internships' },
-    { id: 'livesession', label: 'Live Sessions' }
+    { id: 'winter', label: 'Winter Cycle' }
   ];
 
   useEffect(() => {
@@ -57,8 +54,9 @@ const SWPrograms = () => {
     const checkAuthAndFetch = async () => {
       try {
         const isAuthenticated = await verifySession();
-        
-        if (!isAuthenticated || user?.role !== 'admin') {
+
+        const allowedRoles = ['admin', 'Chief Editor', 'Academic Coordinator', 'Events Coordinator'];
+        if (!isAuthenticated || !allowedRoles.includes(user?.role)) {
           if (isMounted) {
             navigate("/admin/login");
           }
@@ -96,11 +94,11 @@ const SWPrograms = () => {
       const response = await fetch(`${baseUrl}/api/programs`, {
         credentials: 'include'
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch programs');
       }
-      
+
       const data = await response.json();
       setPrograms(data.data || []);
     } catch (error) {
@@ -124,7 +122,7 @@ const SWPrograms = () => {
       let response;
       let url = `${baseUrl}/api/programs`;
       let method = 'POST';
-      
+
       if (!isAdding) {
         url += `/${currentProgram._id}`;
         method = 'PUT';
@@ -145,15 +143,8 @@ const SWPrograms = () => {
         throw new Error(responseData.message || `Failed to ${isAdding ? 'add' : 'update'} program`);
       }
 
-      if (isAdding) {
-        setPrograms([...programs, responseData.data]);
-        toast.success('Program added successfully');
-      } else {
-        setPrograms(programs.map(prog => 
-          prog._id === responseData.data._id ? responseData.data : prog
-        ));
-        toast.success('Program updated successfully');
-      }
+      await fetchPrograms();
+      toast.success(isAdding ? 'Program added successfully' : 'Program updated successfully');
 
       setCurrentProgram({
         title: '',
@@ -285,7 +276,7 @@ const SWPrograms = () => {
       <AdminLayout>
         <main className="flex-grow overflow-y-auto p-6 md:p-8 space-y-6 bg-[#F9FAFB]">
           <div className="max-w-4xl mx-auto space-y-6">
-            
+
             {/* Breadcrumbs */}
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
               <span>Events</span>
@@ -308,7 +299,7 @@ const SWPrograms = () => {
 
             {/* Form Card */}
             <div className="bg-white rounded-xl border border-gray-200/80 p-8 shadow-sm space-y-6">
-              
+
               {/* Event Title */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Event Title</label>
@@ -333,11 +324,8 @@ const SWPrograms = () => {
                     onChange={handleChange}
                     className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#002a32] focus:border-[#002a32] cursor-pointer"
                   >
-                    <option value="livesession">Live Sessions</option>
                     <option value="summer">Summer Programs</option>
                     <option value="winter">Winter Programs</option>
-                    <option value="mootcourt">Moot Courts</option>
-                    <option value="internship">Internships</option>
                   </select>
                 </div>
 
@@ -385,7 +373,7 @@ const SWPrograms = () => {
                     modules={{
                       toolbar: [
                         ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                         [{ 'size': ['small', false, 'large', 'huge'] }],
                         ['clean']
                       ]
@@ -474,8 +462,8 @@ const SWPrograms = () => {
                         placeholder="https://zoom.us/j/8291048821"
                         className="flex-grow px-3 py-2 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#002a32]"
                       />
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => {
                           navigator.clipboard.writeText(currentProgram.liveSessionLink || '');
                           toast.success("Link copied!");
@@ -602,7 +590,7 @@ const SWPrograms = () => {
 
               {/* Bottom Buttons */}
               <div className="flex justify-end gap-3 pt-5 border-t border-gray-100">
-                <button 
+                <button
                   onClick={() => {
                     setIsEditing(false);
                     setIsAdding(false);
@@ -611,7 +599,7 @@ const SWPrograms = () => {
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={saveProgram}
                   className="px-6 py-2.5 bg-[#002a32] text-white rounded-lg hover:bg-[#003d49] transition text-xs font-bold cursor-pointer"
                 >
@@ -629,7 +617,7 @@ const SWPrograms = () => {
   return (
     <AdminLayout>
       <main className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6 bg-[#F9FAFB]">
-        
+
         {/* Page Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -650,11 +638,10 @@ const SWPrograms = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`pb-3 text-sm font-bold transition-all whitespace-nowrap cursor-pointer border-b-2 -mb-[1px] ${
-                activeTab === tab.id
-                  ? 'text-[#002a32] border-[#002a32]'
-                  : 'text-gray-400 hover:text-[#002a32] border-transparent'
-              }`}
+              className={`pb-3 text-sm font-bold transition-all whitespace-nowrap cursor-pointer border-b-2 -mb-[1px] ${activeTab === tab.id
+                ? 'text-[#002a32] border-[#002a32]'
+                : 'text-gray-400 hover:text-[#002a32] border-transparent'
+                }`}
             >
               {tab.label}
             </button>
@@ -662,24 +649,28 @@ const SWPrograms = () => {
         </div>
 
         {/* Events Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          
-          {/* Real Events Loop */}
-          {filteredPrograms.map((program) => {
+        {(() => {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const activePrograms = filteredPrograms.filter(program => program.status !== 'Completed' && new Date(program.endDate || program.startDate) >= today);
+          const expiredPrograms = filteredPrograms.filter(program => program.status === 'Completed' || new Date(program.endDate || program.startDate) < today);
+
+          const renderCard = (program, isActive) => {
             const year = program.startDate ? new Date(program.startDate).getFullYear() : 2024;
             const statusLabel = program.status || 'Active';
-            const statusDotColor = 
-              statusLabel === 'Active' ? 'bg-green-500' :
-              statusLabel === 'Draft' ? 'bg-gray-400' :
-              statusLabel === 'Enrolling' ? 'bg-amber-500' :
-              'bg-gray-400';
+            const statusDotColor =
+              !isActive ? 'bg-red-500' :
+                statusLabel === 'Active' ? 'bg-green-500' :
+                  statusLabel === 'Draft' ? 'bg-gray-400' :
+                    statusLabel === 'Enrolling' ? 'bg-amber-500' :
+                      'bg-gray-400';
 
-            const badgeBg = 
+            const badgeBg =
               program.programType === 'summer' ? 'bg-amber-50 text-amber-700' :
-              program.programType === 'winter' ? 'bg-slate-100 text-slate-700' :
-              program.programType === 'mootcourt' ? 'bg-purple-50 text-purple-700' :
-              program.programType === 'internship' ? 'bg-green-50 text-green-700' :
-              'bg-indigo-50 text-indigo-700';
+                program.programType === 'winter' ? 'bg-slate-100 text-slate-700' :
+                  program.programType === 'mootcourt' ? 'bg-purple-50 text-purple-700' :
+                    program.programType === 'internship' ? 'bg-green-50 text-green-700' :
+                      'bg-indigo-50 text-indigo-700';
 
             const isDraftMode = statusLabel === 'Draft';
 
@@ -687,35 +678,40 @@ const SWPrograms = () => {
               <motion.div
                 key={program._id}
                 whileHover={{ y: -4 }}
-                className={`bg-white p-5 rounded-xl shadow-sm border transition-all flex flex-col h-full ${
-                  isDraftMode 
-                    ? 'border-amber-200 shadow-md ring-1 ring-amber-100' 
-                    : 'border-gray-150'
-                }`}
+                className={`bg-white p-5 rounded-xl shadow-sm border transition-all flex flex-col h-full text-left ${isDraftMode
+                  ? 'border-amber-200 shadow-md ring-1 ring-amber-100'
+                  : 'border-gray-150'
+                  }`}
               >
                 <div className="flex-grow">
-                  {/* Status Indicator & Category Badge */}
                   <div className="flex justify-between items-center mb-3">
-                    <span className={`px-2.5 py-0.5 text-[9px] font-extrabold uppercase rounded ${badgeBg}`}>
-                      {tabLabel(program.programType)} {year}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 text-[9px] font-extrabold uppercase rounded ${badgeBg}`}>
+                        {tabLabel(program.programType)} {year}
+                      </span>
+                      {program.status === 'Draft' && (
+                        <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase rounded bg-amber-100 text-amber-800">
+                          Draft
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[10px] font-bold text-gray-500 flex items-center gap-1.5 select-none">
                       <span className={`w-1.5 h-1.5 rounded-full ${statusDotColor}`}></span>
-                      {statusLabel}
+                      {isActive ? statusLabel : 'Completed / Expired'}
                     </span>
                   </div>
-                  
+
                   {/* Event Title */}
                   <h3 className="text-lg font-bold font-serif text-[#002a32] tracking-tight leading-snug mt-3 mb-2">
                     {program.title}
                   </h3>
                   {/* Description */}
-                  <div 
+                  <div
                     className="text-xs text-gray-500 leading-relaxed font-sans mb-4 line-clamp-3 overflow-hidden"
-                    dangerouslySetInnerHTML={{ __html: program.description }}
+                    dangerouslySetInnerHTML={{ __html: program.description ? program.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ') : '' }}
                   />
                 </div>
-                
+
                 <div className="border-t border-gray-100 pt-3 mt-auto">
                   {/* Starts / Ends Side-by-side */}
                   <div className="grid grid-cols-2 gap-4 mb-4">
@@ -737,13 +733,13 @@ const SWPrograms = () => {
                   <div className="flex gap-2 pt-2 border-t border-gray-50">
                     <button
                       onClick={() => setViewingEnrollmentsEvent(program)}
-                      className="flex-grow border border-gray-200 hover:border-[#002a32] text-gray-700 hover:text-[#002a32] font-bold text-xs py-2 rounded-md transition duration-200 cursor-pointer text-center"
+                      className="flex-grow border border-gray-200 hover:border-[#002a32] text-gray-700 hover:text-[#002a32] font-bold text-xs py-2 rounded-md transition duration-200 cursor-pointer text-center font-sans"
                     >
                       View Details
                     </button>
                     <button
                       onClick={() => startEditingProgram(program)}
-                      className="flex-grow border border-gray-200 hover:border-[#002a32] text-gray-700 hover:text-[#002a32] font-bold text-xs py-2 rounded-md transition duration-200 cursor-pointer text-center"
+                      className="flex-grow border border-gray-200 hover:border-[#002a32] text-gray-700 hover:text-[#002a32] font-bold text-xs py-2 rounded-md transition duration-200 cursor-pointer text-center font-sans"
                     >
                       {statusLabel === 'Completed' ? 'View Archive' : 'Edit'}
                     </button>
@@ -757,24 +753,51 @@ const SWPrograms = () => {
                 </div>
               </motion.div>
             );
-          })}
+          };
 
-          {/* 3. NEW PROGRAM DASHED MOCKUP PLACEHOLDER CARD */}
-          <div 
-            onClick={startAddingProgram}
-            className="border-2 border-dashed border-gray-200 bg-gray-50/20 rounded-xl p-6 flex flex-col justify-center items-center text-center cursor-pointer min-h-[280px] hover:bg-gray-50 hover:border-gray-300 transition-all"
-          >
-            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 mb-3">
-              <FiPlus className="text-xl" />
+          return (
+            <div className="space-y-10 w-full col-span-full">
+              {/* Active Section */}
+              <div>
+                <h2 className="text-xl font-bold font-serif text-[#002a32] mb-4 flex items-center gap-2 border-b border-gray-100 pb-2 text-left">
+                  🟢 Active & Upcoming Programs
+                  <span className="text-xs bg-green-50 text-green-700 font-bold px-2 py-0.5 rounded-full">{activePrograms.length} Active</span>
+                </h2>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {activePrograms.map(p => renderCard(p, true))}
+
+                  {/* New Program dashed card */}
+                  <div
+                    onClick={startAddingProgram}
+                    className="border-2 border-dashed border-gray-200 bg-gray-50/20 rounded-xl p-6 flex flex-col justify-center items-center text-center cursor-pointer min-h-[280px] hover:bg-gray-50 hover:border-gray-300 transition-all"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 mb-3">
+                      <FiPlus className="text-xl" />
+                    </div>
+                    <h3 className="text-sm font-bold text-[#002a32] font-serif mb-1">New Program</h3>
+                    <p className="text-[10px] text-gray-400 font-medium max-w-[160px] font-sans">
+                      Draft a new curriculum for the upcoming semester.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Expired Section */}
+              {expiredPrograms.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-bold font-serif text-[#002a32] mb-4 flex items-center gap-2 border-b border-gray-100 pb-2 text-left">
+                    🔴 Completed & Expired Programs
+                    <span className="text-xs bg-red-50 text-red-700 font-bold px-2 py-0.5 rounded-full">{expiredPrograms.length} Expired</span>
+                  </h2>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 opacity-75">
+                    {expiredPrograms.map(p => renderCard(p, false))}
+                  </div>
+                </div>
+              )}
             </div>
-            <h3 className="text-sm font-bold text-[#002a32] font-serif mb-1">New Program</h3>
-            <p className="text-[10px] text-gray-400 font-medium max-w-[160px]">
-              Draft a new curriculum for the upcoming semester.
-            </p>
-          </div>
+          );
+        })()}
 
-        </div>
-        
         {/* ENROLLMENT DETAILS MODAL VIEW */}
         {viewingEnrollmentsEvent && (
           <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -787,7 +810,7 @@ const SWPrograms = () => {
                   </span>
                   <h3 className="text-xl font-bold font-serif text-[#002a32]">{viewingEnrollmentsEvent.title}</h3>
                 </div>
-                <button 
+                <button
                   onClick={() => setViewingEnrollmentsEvent(null)}
                   className="text-gray-400 hover:text-[#002a32] transition font-bold text-lg cursor-pointer"
                 >
@@ -797,10 +820,56 @@ const SWPrograms = () => {
 
               {/* Modal Body */}
               <div className="p-6 overflow-y-auto space-y-6 text-left flex-grow">
+                {/* Event details */}
+                <div className="bg-gray-50 border border-gray-250 rounded-xl p-5 space-y-3">
+                  <h4 className="text-xs font-bold text-[#002a32] uppercase tracking-wider border-b border-gray-200 pb-1.5 font-serif">
+                    Event Overview
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <span className="block text-gray-400 font-bold uppercase text-[9px]">Institutional Host</span>
+                      <span className="font-semibold text-gray-800">{viewingEnrollmentsEvent.hostInstitution || 'LexScripta Academy'}</span>
+                    </div>
+                    <div>
+                      <span className="block text-gray-400 font-bold uppercase text-[9px]">Program Fees</span>
+                      <span className="font-semibold text-gray-800">{viewingEnrollmentsEvent.programFee || 'Free'}</span>
+                    </div>
+                    <div>
+                      <span className="block text-gray-400 font-bold uppercase text-[9px]">Start Date & Time</span>
+                      <span className="font-semibold text-gray-800">
+                        {viewingEnrollmentsEvent.startDate ? new Date(viewingEnrollmentsEvent.startDate).toLocaleString() : 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-gray-400 font-bold uppercase text-[9px]">End Date & Time</span>
+                      <span className="font-semibold text-gray-800">
+                        {viewingEnrollmentsEvent.endDate ? new Date(viewingEnrollmentsEvent.endDate).toLocaleString() : 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-gray-400 font-bold uppercase text-[9px]">Seats Available</span>
+                      <span className="font-semibold text-gray-800">
+                        {viewingEnrollmentsEvent.capacityType === 'Limited' ? `${viewingEnrollmentsEvent.seatsAvailable} Seats` : 'Unlimited'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="block text-gray-400 font-bold uppercase text-[9px]">Enrollment Format</span>
+                      <span className="font-semibold text-gray-800">{viewingEnrollmentsEvent.enrollmentType || 'Individual'}</span>
+                    </div>
+                    <div className="col-span-2 pt-1 border-t border-gray-150">
+                      <span className="block text-gray-400 font-bold uppercase text-[9px] mb-1">About Program</span>
+                      <div
+                        className="text-gray-700 font-sans leading-relaxed font-normal"
+                        dangerouslySetInnerHTML={{ __html: viewingEnrollmentsEvent.description || 'No description provided.' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 {/* Metric stats cards */}
                 <div className="bg-[#E0F2F1]/30 border border-[#B2DFDB]/30 rounded-xl p-5 text-center">
                   <span className="block text-3xl font-extrabold text-[#004D40]">
-                    {viewingEnrollmentsEvent.programType === 'mootcourt' || viewingEnrollmentsEvent.enrollmentType === 'Team' ? '12 Registered Teams' : '48 Enrolled Attendees'}
+                    {(viewingEnrollmentsEvent.applications || []).length} Enrolled Attendees
                   </span>
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1.5 block">Live Analytics</span>
                 </div>
@@ -808,50 +877,30 @@ const SWPrograms = () => {
                 {/* Enrolled lists block */}
                 <div>
                   <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">
-                    {viewingEnrollmentsEvent.programType === 'mootcourt' || viewingEnrollmentsEvent.enrollmentType === 'Team' ? 'Registered Moot Teams' : 'Individual Attendees'}
+                    {viewingEnrollmentsEvent.enrollmentType === 'Team' ? 'Registered Moot Teams' : 'Individual Attendees'}
                   </h4>
                   <div className="border border-gray-150 rounded-xl overflow-hidden divide-y divide-gray-100">
-                    {viewingEnrollmentsEvent.programType === 'mootcourt' || viewingEnrollmentsEvent.enrollmentType === 'Team' ? (
-                      <>
-                        <div className="p-3.5 bg-white flex justify-between items-center text-xs">
-                          <div>
-                            <span className="font-bold text-[#002a32]">Team Veritas (NLSIU Bangalore)</span>
-                            <p className="text-[10px] text-gray-405 mt-0.5">Members: Rohan Sen (Leader), Aditya Das, Sneha Roy</p>
-                          </div>
-                          <span className="bg-green-50 text-green-700 font-bold px-2 py-0.5 rounded text-[10px]">Confirmed</span>
-                        </div>
-                        <div className="p-3.5 bg-white flex justify-between items-center text-xs">
-                          <div>
-                            <span className="font-bold text-[#002a32]">Amicus Curiae (NALSAR Hyderabad)</span>
-                            <p className="text-[10px] text-gray-405 mt-0.5">Members: Devansh Mehta (Leader), Ishaan Joshi, Priya Garg</p>
-                          </div>
-                          <span className="bg-green-50 text-green-700 font-bold px-2 py-0.5 rounded text-[10px]">Confirmed</span>
-                        </div>
-                      </>
+                    {(!viewingEnrollmentsEvent.applications || viewingEnrollmentsEvent.applications.length === 0) ? (
+                      <div className="p-6 text-center text-gray-500 bg-white italic text-xs">
+                        No active registrations for this program yet.
+                      </div>
                     ) : (
-                      <>
-                        <div className="p-3 bg-white flex justify-between items-center text-xs">
+                      viewingEnrollmentsEvent.applications.map((candidate, idx) => (
+                        <div key={idx} className="p-3 bg-white flex justify-between items-center text-xs">
                           <div>
-                            <span className="font-bold text-gray-800">Rohan Sen</span>
-                            <p className="text-[10px] text-gray-500 mt-0.5">rohan.sen@nlsiu.ac.in • NLSIU Bangalore</p>
+                            <span className="font-bold text-gray-800">{candidate.name}</span>
+                            <p className="text-[10px] text-gray-500 mt-0.5">{candidate.email} • {candidate.college}</p>
                           </div>
-                          <span className="bg-green-50 text-green-700 font-bold px-2 py-0.5 rounded text-[10px]">Confirmed</span>
+                          <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${candidate.status === 'Confirmed'
+                              ? 'bg-green-50 text-green-700'
+                              : candidate.status === 'Rejected'
+                                ? 'bg-red-50 text-red-700'
+                                : 'bg-amber-50 text-amber-700'
+                            }`}>
+                            {candidate.status}
+                          </span>
                         </div>
-                        <div className="p-3 bg-white flex justify-between items-center text-xs">
-                          <div>
-                            <span className="font-bold text-gray-800">Devansh Mehta</span>
-                            <p className="text-[10px] text-gray-500 mt-0.5">devansh.m@nalsar.ac.in • NALSAR Hyderabad</p>
-                          </div>
-                          <span className="bg-green-50 text-green-700 font-bold px-2 py-0.5 rounded text-[10px]">Confirmed</span>
-                        </div>
-                        <div className="p-3 bg-white flex justify-between items-center text-xs">
-                          <div>
-                            <span className="font-bold text-gray-800">Aditya Das</span>
-                            <p className="text-[10px] text-gray-500 mt-0.5">aditya.das@glc.edu • GLC Mumbai</p>
-                          </div>
-                          <span className="bg-green-50 text-green-700 font-bold px-2 py-0.5 rounded text-[10px]">Confirmed</span>
-                        </div>
-                      </>
+                      ))
                     )}
                   </div>
                 </div>
@@ -859,7 +908,7 @@ const SWPrograms = () => {
 
               {/* Modal Footer */}
               <div className="p-4 border-t border-gray-150 flex justify-end gap-3 bg-gray-50/50">
-                <button 
+                <button
                   onClick={() => setViewingEnrollmentsEvent(null)}
                   className="px-5 py-2 bg-[#002a32] hover:bg-[#003d49] text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer"
                 >
@@ -869,7 +918,7 @@ const SWPrograms = () => {
             </div>
           </div>
         )}
-        
+
       </main>
     </AdminLayout>
   );

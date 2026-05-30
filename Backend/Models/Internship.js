@@ -16,16 +16,16 @@ const applicationSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const programSchema = new mongoose.Schema({
+const internshipSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: [true, 'Program title is required'],
+    required: [true, 'Internship title is required'],
     trim: true,
     minlength: [3, 'Title must be at least 3 characters']
   },
   description: {
     type: String,
-    required: [true, 'Program description is required'],
+    required: [true, 'Internship description is required'],
     minlength: [10, 'Description must be at least 10 characters']
   },
   startDate: {
@@ -38,53 +38,12 @@ const programSchema = new mongoose.Schema({
   },
   programType: {
     type: String,
-    required: true,
-    enum: {
-      values: ['summer', 'winter', 'internship'],
-      message: 'Program type must be summer, winter, or internship'
-    },
-    default: 'summer'
+    default: 'internship'
   },
   status: {
     type: String,
-    enum: ['Active', 'Draft', 'Completed', 'Enrolling'],
+    enum: ['Active', 'Draft', 'Completed'],
     default: 'Active'
-  },
-  hostInstitution: {
-    type: String,
-    default: ''
-  },
-  programFee: {
-    type: String,
-    default: ''
-  },
-  speakerName: {
-    type: String,
-    default: ''
-  },
-  maxCapacity: {
-    type: String,
-    default: ''
-  },
-  liveSessionLink: {
-    type: String,
-    default: ''
-  },
-  prizePool: {
-    type: String,
-    default: ''
-  },
-  courtVenue: {
-    type: String,
-    default: ''
-  },
-  enrollmentType: {
-    type: String,
-    default: 'Individual'
-  },
-  capacityType: {
-    type: String,
-    default: 'Unlimited'
   },
   stipend: {
     type: String,
@@ -103,4 +62,4 @@ const programSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('Program', programSchema);
+module.exports = mongoose.model('Internship', internshipSchema);

@@ -8,6 +8,7 @@ const authRoutes = require('./Routes/authRoutes');
 const blogRoutes = require('./Routes/blogRoutes');
 const mootCourtRoutes = require('./Routes/mootCourtRoutes');
 const programRoutes = require('./Routes/programRoutes');
+const internshipRoutes = require('./Routes/internshipRoutes');
 const emailRoutes = require('./Routes/emailRoutes');
 
 const app = express();
@@ -33,6 +34,7 @@ app.use('/auth', authRoutes);
 app.use('/api', blogRoutes);
 app.use('/api/moot-courts', mootCourtRoutes);
 app.use('/api/programs', programRoutes);
+app.use('/api/internships', internshipRoutes);
 app.use('/api/email', emailRoutes);
 
 // Health check endpoint

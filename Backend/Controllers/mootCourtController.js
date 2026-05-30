@@ -126,3 +126,82 @@ exports.getUpcomingMootCount = async (req, res) => {
     res.status(500).json({ message: 'Error fetching upcoming moots', error: error.message });
   }
 };
+
+// Register for a moot court event
+exports.registerForEvent = async (req, res) => {
+  try {
+    const event = await MootCourt.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Moot court event not found'
+      });
+    }
+
+    const { name, email, college, leader, members } = req.body;
+    
+    // Add the registration
+    event.registrations.push({
+      name,
+      email,
+      college,
+      leader: leader || name,
+      members: members || '',
+      status: 'Confirmed'
+    });
+
+    await event.save();
+    res.status(200).json({
+      success: true,
+      message: 'Successfully registered for Moot Court event',
+      data: event
+    });
+  } catch (error) {
+    console.error('Error registering for moot court:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to register for moot court event',
+      error: error.message
+    });
+  }
+};
+
+// Update registration status
+exports.updateRegistrationStatus = async (req, res) => {
+  try {
+    const { eventId, regId } = req.params;
+    const { status } = req.body;
+
+    const event = await MootCourt.findById(eventId);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Moot court event not found'
+      });
+    }
+
+    const registration = event.registrations.id(regId);
+    if (!registration) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registration not found'
+      });
+    }
+
+    registration.status = status;
+    await event.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Registration status updated successfully',
+      data: event
+    });
+  } catch (error) {
+    console.error('Error updating registration status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update registration status',
+      error: error.message
+    });
+  }
+};

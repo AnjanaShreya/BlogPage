@@ -26,9 +26,15 @@ const handleSubmit = async (e) => {
     localStorage.setItem("adminEmail", email);
 
     // Redirect based on role
-    if (result.role === "admin") {
+    if (result.role === "Moot Coordinator") {
+      navigate("/admin/mootcourt");
+    } else if (result.role === "Academic Coordinator" || result.role === "Events Coordinator") {
+      navigate("/admin/swprograms");
+    } else if (result.role === "Internships Coordinator") {
+      navigate("/admin/internships");
+    } else if (result.role === "admin" || result.role === "Chief Editor") {
       navigate("/admin/dashboard");
-    } else if (result.role === "subadmin") {
+    } else if (result.role === "subadmin" || result.role === "Blog Reviewer") {
       navigate("/admin/onlyblogreview");
     } else {
       throw new Error("Unauthorized access");

@@ -13,8 +13,73 @@ const Dashboard = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
 
   const navigate = useNavigate();
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
+  useEffect(() => {
+    const fetchUpcomingEvents = async () => {
+      try {
+        const mootRes = await fetch(`${baseUrl}/api/moot-courts`);
+        const mootData = await mootRes.json();
+        const rawMoots = mootData.data || [];
+
+        const progRes = await fetch(`${baseUrl}/api/programs`);
+        const progData = await progRes.json();
+        const rawProgs = progData.data || [];
+
+        const internshipRes = await fetch(`${baseUrl}/api/internships`);
+        const internshipData = await internshipRes.json();
+        const rawInternships = internshipData.data || [];
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const combined = [
+          ...rawMoots.map(m => ({
+            _id: m._id,
+            title: m.title,
+            date: new Date(m.date),
+            venue: m.venue || 'TBD',
+            description: m.description ? m.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ') : '',
+            link: '/opportunities'
+          })),
+          ...rawProgs
+            .filter(p => p.status !== 'Draft' && p.status !== 'Completed')
+            .map(p => ({
+              _id: p._id,
+              title: p.title,
+              date: new Date(p.startDate),
+              venue: 'Hybrid Mode',
+              description: p.description ? p.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ') : '',
+              link: '/opportunities'
+            })),
+          ...rawInternships
+            .filter(i => i.status !== 'Draft' && i.status !== 'Completed')
+            .map(i => ({
+              _id: i._id,
+              title: i.title,
+              date: new Date(i.startDate),
+              venue: 'Hybrid Mode',
+              description: i.description ? i.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ') : '',
+              link: '/opportunities'
+            }))
+        ];
+
+        // Filter out old/expired events
+        const filtered = combined
+          .filter(e => e.date >= today)
+          .sort((a, b) => a.date - b.date)
+          .slice(0, 2);
+
+        setUpcomingEvents(filtered);
+      } catch (err) {
+        console.error("Error fetching upcoming events for homepage:", err);
+      }
+    };
+    fetchUpcomingEvents();
+  }, [baseUrl]);
 
   // Debounce Search query
   useEffect(() => {
@@ -59,7 +124,7 @@ const Dashboard = () => {
 
           {/* Hero Content */}
           <div className="relative z-10 text-center max-w-4xl flex flex-col items-center">
-            
+
             {/* Capsule badge */}
             <span className="bg-white/10 text-gold font-sans font-bold tracking-widest text-[10px] uppercase px-4 py-1 rounded-full mb-4 border border-white/20 shadow-sm">
               A Community of Thinkers
@@ -84,7 +149,7 @@ const Dashboard = () => {
               >
                 Write a Journal
               </button>
-              <a 
+              <a
                 href="/contactus"
                 className="text-xs font-bold text-white hover:text-gold transition-colors tracking-widest uppercase flex items-center gap-1.5"
               >
@@ -109,26 +174,26 @@ const Dashboard = () => {
             {/* Trending tags - Translucent borders and white/gold hover styles */}
             <div className="flex flex-wrap justify-center items-center gap-2 mt-4 text-left">
               <span className="text-[10px] font-bold text-white uppercase tracking-wider mr-1">TRENDING:</span>
-              <button 
-                onClick={() => handleTagClick("Constitution")} 
+              <button
+                onClick={() => handleTagClick("Constitution")}
                 className="bg-white/10 hover:bg-white/20 text-gray-200 font-semibold text-[9px] px-3 py-1 rounded-full border border-white/10 hover:border-white/25 transition-all shadow-sm"
               >
                 #ConstitutionalLaw
               </button>
-              <button 
-                onClick={() => handleTagClick("Digital")} 
+              <button
+                onClick={() => handleTagClick("Digital")}
                 className="bg-white/10 hover:bg-white/20 text-gray-200 font-semibold text-[9px] px-3 py-1 rounded-full border border-white/10 hover:border-white/25 transition-all shadow-sm"
               >
                 #DigitalRights
               </button>
-              <button 
-                onClick={() => handleTagClick("Administrative")} 
+              <button
+                onClick={() => handleTagClick("Administrative")}
                 className="bg-white/10 hover:bg-white/20 text-gray-200 font-semibold text-[9px] px-3 py-1 rounded-full border border-white/10 hover:border-white/25 transition-all shadow-sm"
               >
                 #AdministrativeLaw
               </button>
-              <button 
-                onClick={() => handleTagClick("Moot")} 
+              <button
+                onClick={() => handleTagClick("Moot")}
                 className="bg-white/10 hover:bg-white/20 text-gray-200 font-semibold text-[9px] px-3 py-1 rounded-full border border-white/10 hover:border-white/25 transition-all shadow-sm"
               >
                 #MootCourts
@@ -160,7 +225,7 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Card 1: Technology */}
-              <div 
+              <div
                 onClick={() => handleTagClick("Technology")}
                 className="bg-white border border-gray-100 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-300 cursor-pointer group"
               >
@@ -176,7 +241,7 @@ const Dashboard = () => {
               </div>
 
               {/* Card 2: Research */}
-              <div 
+              <div
                 onClick={() => handleTagClick("Research")}
                 className="bg-white border border-gray-100 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-300 cursor-pointer group"
               >
@@ -192,7 +257,7 @@ const Dashboard = () => {
               </div>
 
               {/* Card 3: Human Rights */}
-              <div 
+              <div
                 onClick={() => handleTagClick("Human Rights")}
                 className="bg-white border border-gray-100 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-300 cursor-pointer group"
               >
@@ -208,7 +273,7 @@ const Dashboard = () => {
               </div>
 
               {/* Card 4: AI & Ethics */}
-              <div 
+              <div
                 onClick={() => handleTagClick("AI")}
                 className="bg-white border border-gray-100 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:-translate-y-1.5 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-300 cursor-pointer group"
               >
@@ -229,13 +294,13 @@ const Dashboard = () => {
         {/* Remodeled About Us Section (Empowering Legal Minds) with Parallax Card Effect */}
         <section className="bg-white pb-12">
           <div className="max-w-[1500px] mx-auto px-4 md:px-8">
-            <div 
-              style={parallax} 
+            <div
+              style={parallax}
               className="relative rounded-[2.5rem] overflow-hidden py-16 px-6 md:px-12 text-center text-white shadow-2xl"
             >
               {/* Premium Deep Teal/Green overlay overlaying the parallax background */}
               <div className="absolute inset-0 bg-[#002a25] bg-opacity-95 z-0"></div>
-              
+
               <div className="relative z-10 max-w-6xl mx-auto">
                 {/* Title & Subtitle */}
                 <h2 className="font-serif text-3xl md:text-5xl font-bold tracking-wide mb-2 text-white">
@@ -299,94 +364,90 @@ const Dashboard = () => {
         {/* Upcoming Events Section */}
         <section className="bg-white py-20 border-t border-gray-100">
           <div className="max-w-7xl mx-auto px-6">
-            
+
             {/* Events Header */}
             <div className="flex justify-between items-end mb-12">
               <div>
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy tracking-wide">
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-navy tracking-wide text-left">
                   Upcoming Events
                 </h2>
               </div>
-              <button className="text-xs font-bold text-navy hover:text-navy-light tracking-widest uppercase transition-colors">
-                View Calendar
+              <button
+                onClick={() => navigate('/opportunities')}
+                className="text-xs font-bold text-navy hover:text-navy-light tracking-widest uppercase transition-colors cursor-pointer"
+              >
+                View Opportunities
               </button>
             </div>
 
-            {/* Side-by-Side Events Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Event 1: Webinar: AI Regulation 2024 */}
-              <div className="bg-white border border-gray-150 rounded-3xl overflow-hidden flex flex-col sm:flex-row shadow-[0_4px_25px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_35px_rgba(0,0,0,0.06)] transition-all duration-300 min-h-[180px]">
-                {/* Left Date Block: Dark Teal */}
-                <div className="bg-[#002a32] text-white flex flex-col justify-center items-center w-full sm:w-40 py-6 sm:py-0 px-4 text-center">
-                  <span className="text-[10px] font-sans font-extrabold tracking-widest uppercase opacity-70 mb-1">
-                    March
-                  </span>
-                  <span className="font-serif text-5xl font-bold leading-none">
-                    15
-                  </span>
-                </div>
-                
-                {/* Right Content Block */}
-                <div className="p-6.5 flex-grow flex flex-col justify-between gap-4 font-sans pl-6 pr-6 py-5">
-                  <div>
-                    <h3 className="font-sans font-bold text-[#0f172a] text-lg mb-2">
-                      Webinar: AI Regulation 2024
-                    </h3>
-                    <p className="text-gray-500 text-xs leading-relaxed max-w-sm">
-                      Join global experts discussing the new frameworks for LLM governance in legal practice.
-                    </p>
-                  </div>
-                  
-                  {/* Footer Row */}
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100 mt-2">
-                    <span className="text-[10px] font-bold text-[#002a32] tracking-wider uppercase flex items-center gap-1">
-                      Online Zoom
-                    </span>
-                    <button className="bg-[#002a32] hover:bg-[#003c47] text-white text-[10px] font-bold tracking-wider uppercase px-4 py-2 rounded-lg transition-colors">
-                      Register
-                    </button>
-                  </div>
-                </div>
+            {/* Dynamic Events Cards */}
+            {upcomingEvents.length === 0 ? (
+              <div className="bg-gray-50/50 border border-dashed border-gray-200 rounded-3xl p-10 text-center font-sans">
+                <p className="text-gray-500 font-bold text-sm">New opportunities and moot cohorts are being curated by our academic board.</p>
+                <p className="text-gray-400 text-xs mt-1">Check back shortly or visit our Opportunities page to view details.</p>
+                <button
+                  onClick={() => navigate('/opportunities')}
+                  className="mt-4 px-6 py-2 bg-[#002a32] text-white hover:bg-[#003c47] rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Browse Catalog
+                </button>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {upcomingEvents.map((event, idx) => {
+                  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                  const evDate = new Date(event.date);
+                  const monthName = months[evDate.getMonth()];
+                  const dayNum = evDate.getDate();
 
-              {/* Event 2: Moot Court Workshop */}
-              <div className="bg-white border border-gray-150 rounded-3xl overflow-hidden flex flex-col sm:flex-row shadow-[0_4px_25px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_35px_rgba(0,0,0,0.06)] transition-all duration-300 min-h-[180px]">
-                {/* Left Date Block: Yellow Gold */}
-                <div className="bg-[#f7c244] text-[#0f172a] flex flex-col justify-center items-center w-full sm:w-40 py-6 sm:py-0 px-4 text-center">
-                  <span className="text-[10px] font-sans font-extrabold tracking-widest uppercase opacity-75 mb-1">
-                    April
-                  </span>
-                  <span className="font-serif text-5xl font-bold leading-none">
-                    02
-                  </span>
-                </div>
-                
-                {/* Right Content Block */}
-                <div className="p-6.5 flex-grow flex flex-col justify-between gap-4 font-sans pl-6 pr-6 py-5">
-                  <div>
-                    <h3 className="font-sans font-bold text-[#0f172a] text-lg mb-2">
-                      Moot Court Workshop
-                    </h3>
-                    <p className="text-gray-500 text-xs leading-relaxed max-w-sm">
-                      Advanced advocacy skills training for law students and young associates.
-                    </p>
-                  </div>
-                  
-                  {/* Footer Row */}
-                  <div className="flex justify-between items-center pt-3 border-t border-gray-100 mt-2">
-                    <span className="text-[10px] font-bold text-[#002a32] tracking-wider uppercase flex items-center gap-1">
-                      Hyderabad, IN
-                    </span>
-                    <button className="bg-[#002a32] hover:bg-[#003c47] text-white text-[10px] font-bold tracking-wider uppercase px-4 py-2 rounded-lg transition-colors">
-                      Register
-                    </button>
-                  </div>
-                </div>
+                  // Alternate colors slightly for premium layout feel
+                  const dateBg = idx === 0 ? 'bg-[#002a32] text-white' : 'bg-[#ecc260] text-navy';
+
+                  return (
+                    <div key={event._id} className="bg-white border border-gray-150 rounded-3xl overflow-hidden flex flex-col sm:flex-row shadow-[0_4px_25px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_35px_rgba(0,0,0,0.06)] transition-all duration-300 min-h-[180px] text-left">
+                      {/* Left Date Block */}
+                      <div className={`${dateBg} flex flex-col justify-center items-center w-full sm:w-40 py-6 sm:py-0 px-4 text-center select-none`}>
+                        <span className="text-[10px] font-sans font-extrabold tracking-widest uppercase opacity-75 mb-1">
+                          {monthName}
+                        </span>
+                        <span className="font-serif text-5xl font-bold leading-none">
+                          {dayNum}
+                        </span>
+                      </div>
+
+                      {/* Right Content Block */}
+                      <div className="p-6.5 flex-grow flex flex-col justify-between gap-4 font-sans pl-6 pr-6 py-5">
+                        <div>
+                          <h3 className="font-sans font-bold text-[#0f172a] text-lg mb-2 line-clamp-1">
+                            {event.title}
+                          </h3>
+                          <p className="text-gray-500 text-xs leading-relaxed max-w-sm line-clamp-2">
+                            {event.description || "Discover tournament parameters, schedule layouts, host details, and participate in our upcoming cycle."}
+                          </p>
+                        </div>
+
+                        {/* Footer Row */}
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-100 mt-2">
+                          <span className="text-[10px] font-bold text-[#002a32] tracking-wider uppercase flex items-center gap-1">
+                            📍 {event.venue}
+                          </span>
+                          <button
+                            onClick={() => navigate(event.link)}
+                            className="bg-[#002a32] hover:bg-[#003c47] text-white text-[10px] font-bold tracking-wider uppercase px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Learn & Register
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+            )}
 
           </div>
         </section>
+
       </div>
       <Footer />
     </div>

@@ -43,7 +43,8 @@ const verifyToken = async (req, res, next) => {
 };
 
 const requireAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'subadmin') {
+  const adminRoles = ['admin', 'subadmin', 'Chief Editor', 'Blog Reviewer', 'Moot Coordinator', 'Academic Coordinator', 'Events Coordinator', 'Internships Coordinator'];
+  if (!adminRoles.includes(req.user.role)) {
     return res.status(403).json({
       success: false,
       message: 'Admin privileges required'
@@ -53,7 +54,8 @@ const requireAdmin = (req, res, next) => {
 };
 
 const requireSubadmin = (req, res, next) => {
-  if (req.user.role !== 'subadmin' && req.user.role !== 'admin') {
+  const subadminRoles = ['admin', 'subadmin', 'Chief Editor', 'Blog Reviewer'];
+  if (!subadminRoles.includes(req.user.role)) {
     return res.status(403).json({ 
       success: false,
       message: 'Subadmin privileges required' 

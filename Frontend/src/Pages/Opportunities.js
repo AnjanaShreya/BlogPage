@@ -6,13 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { 
-  FaCalendarAlt, 
-  FaMapMarkerAlt, 
-  FaTrophy, 
-  FaUser, 
-  FaClock, 
-  FaChevronDown, 
+import {
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaTrophy,
+  FaUser,
+  FaClock,
+  FaChevronDown,
   FaArrowRight,
   FaTicketAlt
 } from 'react-icons/fa';
@@ -21,13 +21,17 @@ import img0 from '../assets/img0.jpg';
 const Opportunities = () => {
   const [dbMootCourts, setDbMootCourts] = useState([]);
   const [dbPrograms, setDbPrograms] = useState([]);
+  const [dbInternships, setDbInternships] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('All');
   const [sortOption, setSortOption] = useState('Latest Arrivals');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [regForm, setRegForm] = useState({ name: '', email: '', college: '', skills: '', whyInterested: '', resumeLink: '' });
 
-  const baseUrl = process.env.REACT_APP_BASE_URL || 'http://localhost:5000';
+  const baseUrl = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,13 +40,18 @@ const Opportunities = () => {
         // Fetch Moot Courts
         const mootRes = await fetch(`${baseUrl}/api/moot-courts`);
         const mootData = await mootRes.json();
-        
-        // Fetch Programs
+
+        // Fetch Programs (Summer/Winter events)
         const progRes = await fetch(`${baseUrl}/api/programs`);
         const progData = await progRes.json();
 
+        // Fetch Internships
+        const internshipRes = await fetch(`${baseUrl}/api/internships`);
+        const internshipData = await internshipRes.json();
+
         setDbMootCourts(mootData.data || []);
         setDbPrograms(progData.data || []);
+        setDbInternships(internshipData.data || []);
       } catch (error) {
         console.error('Error fetching opportunities:', error);
         toast.error('Failed to load live opportunities. Showing curated events.');
@@ -54,12 +63,17 @@ const Opportunities = () => {
     fetchData();
   }, [baseUrl]);
 
+  const stripHtml = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
+  };
+
   // Convert database items to a unified Event structure
   const dbEvents = [
     ...dbMootCourts.map(item => ({
       id: item._id,
       title: item.title,
-      description: item.description || 'Discover key details and register for this premier moot court competition.',
+      description: stripHtml(item.description) || 'Discover key details and register for this premier moot court competition.',
       type: 'Moot Court',
       status: item.status || 'Upcoming',
       statusType: 'upcoming',
@@ -68,73 +82,115 @@ const Opportunities = () => {
       venue: item.venue || 'TBD',
       extraInfo: item.prizes ? `Prizes: ${item.prizes}` : 'Exciting Rewards',
       extraIcon: 'trophy',
-      buttonText: 'Register Now',
-      buttonStyle: 'gold',
-      createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
+      buttonText: 'Learn More',
+      buttonStyle: 'teal',
+      createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+      // Rich Moot Court parameters
+      registrationDeadline: item.registrationDeadline,
+      contact: item.contact,
+      maxTeams: item.teams,
+      prizes: item.prizes,
+      rulesLink: item.rulesLink,
+      schedule: item.schedule || [],
+      isMootCourt: true
     })),
     ...dbPrograms.map(item => ({
       id: item._id,
       title: item.title,
-      description: item.description || 'Elevate your learning through our dedicated summer and winter legal academic programs.',
+      description: stripHtml(item.description) || 'Elevate your learning through our dedicated summer and winter legal academic programs.',
       type: item.programType === 'winter' ? 'Winter Program' : 'Summer Program',
-      status: 'Upcoming',
+      status: item.status || 'Active',
       statusType: 'upcoming',
       dateText: item.startDate ? `${new Date(item.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(item.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : 'TBD',
       date: item.startDate ? new Date(item.startDate) : new Date(),
+      endDate: item.endDate ? new Date(item.endDate) : (item.startDate ? new Date(item.startDate) : new Date()),
       venue: 'Hybrid Mode',
       extraInfo: 'Limited Seats Available',
       extraIcon: 'user',
       buttonText: 'Learn More',
       buttonStyle: 'teal',
-      createdAt: item.createdAt ? new Date(item.createdAt) : new Date()
+      createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+      isMootCourt: false
+    })),
+    ...dbInternships.map(item => ({
+      id: item._id,
+      title: item.title,
+      description: stripHtml(item.description) || 'Elevate your learning through our dedicated summer and winter legal academic programs.',
+      type: 'Internship',
+      status: item.status || 'Active',
+      statusType: 'upcoming',
+      dateText: item.startDate ? `${new Date(item.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(item.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : 'TBD',
+      date: item.startDate ? new Date(item.startDate) : new Date(),
+      endDate: item.endDate ? new Date(item.endDate) : (item.startDate ? new Date(item.startDate) : new Date()),
+      venue: 'Hybrid Mode',
+      extraInfo: 'Limited Seats Available',
+      extraIcon: 'user',
+      buttonText: 'Learn More',
+      buttonStyle: 'teal',
+      createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+      isMootCourt: false
     }))
   ];
 
   // Apply filters
   const filteredEvents = dbEvents.filter(event => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Draft or manually Completed programs/internships are excluded from public-facing list
+    if (event.status === 'Draft' || event.status === 'Completed') {
+      return false;
+    }
+
+    const eventDate = new Date(event.endDate || event.date);
+    if (eventDate < today) return false; // Filter out expired/completed events
+
     if (activeFilter === 'All') return true;
     if (activeFilter === 'Moot Courts') return event.type === 'Moot Court';
-    if (activeFilter === 'Workshops') return event.type === 'Workshop' || event.type === 'Panel Discussion';
+    if (activeFilter === 'Summer Events') return event.type === 'Summer Program';
+    if (activeFilter === 'Winter Events') return event.type === 'Winter Program';
     if (activeFilter === 'Internships') return event.type === 'Internship';
     return true;
   });
 
   // Apply Sorting
   const sortedEvents = [...filteredEvents].sort((a, b) => {
+    const timeA = new Date(a.createdAt).getTime();
+    const timeB = new Date(b.createdAt).getTime();
     if (sortOption === 'Latest Arrivals') {
-      return b.createdAt - a.createdAt;
+      return timeB - timeA;
     } else {
-      return a.createdAt - b.createdAt;
+      return timeA - timeB;
     }
   });
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F9FAFB] font-sans antialiased text-gray-900">
       <ToastContainer position="top-right" autoClose={3000} />
-      
+
       {/* Navigation */}
       <div className="relative z-20 shadow-sm bg-white">
         <Navbar />
       </div>
 
       {/* Hero Banner Section */}
-      <CategoryHeading 
-        title="Explore Opportunities" 
-        description="Elevate your legal career by discovering curated moot courts, international internships, panel discussions, and academic programs designed for the modern practitioner." 
+      <CategoryHeading
+        title="Explore Opportunities"
+        description="Elevate your legal career by discovering curated moot courts, international internships, panel discussions, and academic programs designed for the modern practitioner."
       />
 
       {/* Main Content & Filter Section */}
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 md:px-8 py-10">
-        
+
         {/* Filter & Sort Bar */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-6 mb-10">
-          
+
           {/* Left: Filter By Event Type */}
           <div className="flex flex-wrap items-center gap-2 md:gap-3">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mr-2">
               Filter by Event Type
             </span>
-            {['All', 'Moot Courts', 'Workshops', 'Internships'].map((filterName) => {
+            {['All', 'Moot Courts', 'Summer Events', 'Winter Events', 'Internships'].map((filterName) => {
               const isActive = activeFilter === filterName;
               return (
                 <button
@@ -143,11 +199,10 @@ const Opportunities = () => {
                     setActiveFilter(filterName);
                     setVisibleCount(6); // reset page
                   }}
-                  className={`px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 ${
-                    isActive 
-                      ? 'bg-[#002a32] text-white shadow-md' 
-                      : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
+                  className={`px-4 py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 ${isActive
+                    ? 'bg-[#002a32] text-white shadow-md'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
                 >
                   {filterName === 'All' ? 'All Programs' : filterName}
                 </button>
@@ -164,7 +219,7 @@ const Opportunities = () => {
               <span>{sortOption}</span>
               <FaChevronDown className={`ml-2 text-gray-400 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
             </button>
-            
+
             <AnimatePresence>
               {showSortDropdown && (
                 <>
@@ -182,11 +237,10 @@ const Opportunities = () => {
                           setSortOption(option);
                           setShowSortDropdown(false);
                         }}
-                        className={`w-full text-left px-4 py-2.5 text-xs md:text-sm transition-colors ${
-                          sortOption === option 
-                            ? 'bg-[#002a32]/5 text-[#002a32] font-bold' 
-                            : 'text-gray-600 hover:bg-gray-50'
-                        }`}
+                        className={`w-full text-left px-4 py-2.5 text-xs md:text-sm transition-colors ${sortOption === option
+                          ? 'bg-[#002a32]/5 text-[#002a32] font-bold'
+                          : 'text-gray-600 hover:bg-gray-50'
+                          }`}
                       >
                         {option}
                       </button>
@@ -206,9 +260,9 @@ const Opportunities = () => {
         ) : (
           <>
             {/* Opportunities Grid */}
-            <motion.div 
+            <motion.div
               layout
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-12"
             >
               <AnimatePresence>
                 {sortedEvents.slice(0, visibleCount).map((event) => (
@@ -219,23 +273,23 @@ const Opportunities = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3 }}
-                    className="flex flex-col bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                    onClick={() => setSelectedEvent(event)}
+                    className="flex flex-col bg-white rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                   >
                     {/* Card Content Wrapper */}
-                    <div className="p-6 md:p-8 flex-grow flex flex-col justify-between">
+                    <div className="p-5 md:p-6 flex-grow flex flex-col justify-between">
                       <div>
                         {/* Upper Badge & Status */}
-                        <div className="flex justify-between items-center mb-5">
-                          <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-md ${
-                            event.type === 'Moot Court'
-                              ? 'bg-[#E0F2F1] text-[#00796B]'
-                              : event.type.includes('Program')
+                        <div className="flex justify-between items-center mb-3">
+                          <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-md ${event.type === 'Moot Court'
+                            ? 'bg-[#E0F2F1] text-[#00796B]'
+                            : event.type.includes('Program')
                               ? 'bg-[#FFF3E0] text-[#E65100]'
                               : 'bg-[#F3E5F5] text-[#7B1FA2]'
-                          }`}>
+                            }`}>
                             {event.type}
                           </span>
-                          
+
                           <div className="flex items-center gap-1.5 text-[11px] md:text-xs font-bold text-gray-500">
                             {event.statusType === 'upcoming' && (
                               <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse inline-block"></span>
@@ -251,17 +305,17 @@ const Opportunities = () => {
                         </div>
 
                         {/* Event Title */}
-                        <h3 className="text-xl md:text-2xl font-bold text-[#002a32] mb-3 leading-snug font-serif hover:text-gold transition-colors duration-300">
+                        <h3 className="text-lg md:text-xl font-bold text-[#002a32] mb-2 leading-snug font-serif hover:text-gold transition-colors duration-300">
                           {event.title}
                         </h3>
 
                         {/* Event Description */}
-                        <p className="text-xs md:text-sm text-gray-500 mb-6 font-normal leading-relaxed line-clamp-3">
+                        <p className="text-xs md:text-sm text-gray-500 mb-4 font-normal leading-relaxed line-clamp-3">
                           {event.description}
                         </p>
 
                         {/* Quick Specs List */}
-                        <div className="space-y-3.5 mb-8">
+                        <div className="space-y-2 mb-5">
                           {/* Row 1: Date */}
                           <div className="flex items-center gap-3 text-xs md:text-sm text-gray-700">
                             <div className="bg-gray-50 p-2 rounded-lg text-gray-400">
@@ -269,7 +323,7 @@ const Opportunities = () => {
                             </div>
                             <span className="font-medium text-gray-600">{event.dateText}</span>
                           </div>
-                          
+
                           {/* Row 2: Location */}
                           <div className="flex items-center gap-3 text-xs md:text-sm text-gray-700">
                             <div className="bg-gray-50 p-2 rounded-lg text-gray-400">
@@ -291,17 +345,17 @@ const Opportunities = () => {
                       {/* Action Button */}
                       <div>
                         {event.buttonStyle === 'gold' && (
-                          <button className="w-full py-3 px-4 bg-[#8C6D23] hover:bg-[#a17e2b] text-white font-bold text-xs md:text-sm rounded-xl transition-all duration-300 shadow-sm">
+                          <button className="w-full py-2.5 px-4 bg-[#8C6D23] hover:bg-[#a17e2b] text-white font-bold text-xs md:text-sm rounded-lg transition-all duration-300 shadow-sm">
                             {event.buttonText}
                           </button>
                         )}
                         {event.buttonStyle === 'teal' && (
-                          <button className="w-full py-3 px-4 bg-[#002a32] hover:bg-[#003d49] text-white font-bold text-xs md:text-sm rounded-xl transition-all duration-300 shadow-sm">
+                          <button className="w-full py-2.5 px-4 bg-[#002a32] hover:bg-[#003d49] text-white font-bold text-xs md:text-sm rounded-lg transition-all duration-300 shadow-sm">
                             {event.buttonText}
                           </button>
                         )}
                         {event.buttonStyle === 'outline' && (
-                          <button className="w-full py-3 px-4 bg-white border border-[#002a32] text-[#002a32] hover:bg-[#002a32]/5 font-bold text-xs md:text-sm rounded-xl transition-all duration-300 shadow-sm">
+                          <button className="w-full py-2.5 px-4 bg-white border border-[#002a32] text-[#002a32] hover:bg-[#002a32]/5 font-bold text-xs md:text-sm rounded-lg transition-all duration-300 shadow-sm">
                             {event.buttonText}
                           </button>
                         )}
@@ -338,7 +392,7 @@ const Opportunities = () => {
         {/* Bottom Banner Section */}
         <section className="relative rounded-3xl overflow-hidden shadow-xl mt-12 bg-[#002a32]">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch min-h-[300px]">
-            
+
             {/* Left: Text & CTA */}
             <div className="lg:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-center text-left">
               <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4 font-serif leading-tight">
@@ -347,7 +401,7 @@ const Opportunities = () => {
               <p className="text-gray-200 text-sm md:text-base font-normal leading-relaxed mb-8 max-w-xl">
                 Connect with thousands of law students and professionals globally. Submit your opportunity to be featured on our platform.
               </p>
-              
+
               <div className="flex flex-wrap gap-4">
                 <button className="py-3 px-6 bg-[#8C6D23] hover:bg-[#a17e2b] text-white font-bold text-xs md:text-sm rounded-xl transition-all duration-300 shadow-md">
                   Submit Event
@@ -359,7 +413,7 @@ const Opportunities = () => {
             </div>
 
             {/* Right: Gavel Image (using current img0 with beautiful zoom cover style) */}
-            <div 
+            <div
               className="lg:col-span-5 min-h-[250px] lg:min-h-full bg-cover bg-center relative"
               style={{ backgroundImage: `url(${img0})` }}
             >
@@ -371,6 +425,289 @@ const Opportunities = () => {
         </section>
 
       </main>
+
+      {/* DETAILED OPPORTUNITY MODAL POPUP */}
+      {selectedEvent && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-lg border border-gray-200 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col text-left">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#002a32] text-white">
+                  {selectedEvent.type}
+                </span>
+                <h3 className="text-xl font-bold font-serif text-[#002a32] mt-1.5 leading-snug">{selectedEvent.title}</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedEvent(null);
+                  setIsRegistering(false);
+                }}
+                className="text-gray-400 hover:text-[#002a32] transition font-bold text-lg cursor-pointer"
+              >
+                ✖
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5 flex-grow">
+              {!isRegistering ? (
+                <>
+                  {/* Detailed Description */}
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">About the Event</h4>
+                    <p className="text-sm text-gray-700 leading-relaxed font-sans">
+                      {selectedEvent.description}
+                    </p>
+                  </div>
+
+                  {selectedEvent.isMootCourt ? (
+                    /* Rich Moot Court Details */
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-150">
+                        <div>
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Event Date</span>
+                          <span className="text-xs font-bold text-gray-800">{selectedEvent.dateText}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Registration Deadline</span>
+                          <span className="text-xs font-bold text-red-700">
+                            {selectedEvent.registrationDeadline ? new Date(selectedEvent.registrationDeadline).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'TBD'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Venue</span>
+                          <span className="text-xs font-bold text-gray-800">{selectedEvent.venue}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Max Teams</span>
+                          <span className="text-xs font-bold text-gray-800">{selectedEvent.maxTeams || 'Unlimited'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Contact Email</span>
+                          <span className="text-xs font-bold text-gray-800">{selectedEvent.contact || 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Prizes & Rewards</span>
+                          <span className="text-xs font-bold text-amber-700">{selectedEvent.prizes || 'Exciting Awards'}</span>
+                        </div>
+                        {selectedEvent.rulesLink && (
+                          <div className="col-span-2 pt-2 border-t border-gray-200">
+                            <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Rules & Documents</span>
+                            <a
+                              href={selectedEvent.rulesLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-bold text-blue-650 hover:underline inline-flex items-center gap-1"
+                            >
+                              📁 View Official Rules PDF →
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Schedule Plans */}
+                      {selectedEvent.schedule && selectedEvent.schedule.length > 0 && (
+                        <div className="border border-gray-150 rounded-lg p-4 bg-white space-y-2.5">
+                          <h5 className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Tournament Schedule</h5>
+                          <div className="space-y-2 divide-y divide-gray-100">
+                            {selectedEvent.schedule.map((sched, idx) => (
+                              <div key={idx} className={`pt-2 ${idx === 0 ? 'pt-0' : ''} text-xs`}>
+                                <span className="font-bold text-[#002a32] block md:inline md:mr-2">{sched.day || `Day ${idx}`}:</span>
+                                <span className="text-gray-700 leading-relaxed">{sched.events}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Default Quick Specs Grid */
+                    <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                      <div>
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Date</span>
+                        <span className="text-xs font-bold text-gray-800">{selectedEvent.dateText}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Location</span>
+                        <span className="text-xs font-bold text-gray-800">{selectedEvent.venue}</span>
+                      </div>
+                      <div className="col-span-2 pt-2 border-t border-gray-200/60">
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Perks & Details</span>
+                        <span className="text-xs font-bold text-gray-800">{selectedEvent.extraInfo}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Register Trigger Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsRegistering(true);
+                    }}
+                    className="w-full py-3 bg-[#002a32] hover:bg-[#003d49] text-white font-bold text-sm rounded-lg transition shadow-md cursor-pointer text-center"
+                  >
+                    Proceed to Registration
+                  </button>
+                </>
+              ) : (
+                /* Registration form inside the popup */
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const isProgramOrInternship = selectedEvent.type.includes('Program') || selectedEvent.type === 'Internship';
+
+                    if (isProgramOrInternship) {
+                      try {
+                        const response = await fetch(`${baseUrl}/api/programs/${selectedEvent.id}/apply`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify(regForm)
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.success) {
+                          toast.success(`Successfully registered for ${selectedEvent.title}!`);
+                        } else {
+                          toast.error(data.message || 'Failed to submit application.');
+                        }
+                      } catch (err) {
+                        console.error('Error submitting application:', err);
+                        toast.error('Failed to submit application. Please check your network.');
+                      }
+                    } else {
+                      // Real endpoint for Moot Courts
+                      try {
+                        const response = await fetch(`${baseUrl}/api/moot-courts/${selectedEvent.id}/register`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({
+                            name: regForm.name,
+                            email: regForm.email,
+                            college: regForm.college,
+                            leader: regForm.name,
+                            members: regForm.skills || '' // Reuse skills field as members if supplied
+                          })
+                        });
+                        const data = await response.json();
+                        if (response.ok && data.success) {
+                          toast.success(`Successfully registered for ${selectedEvent.title}!`);
+                        } else {
+                          toast.error(data.message || 'Failed to submit registration.');
+                        }
+                      } catch (err) {
+                        console.error('Error submitting registration:', err);
+                        toast.error('Failed to submit registration. Please check your network.');
+                      }
+                    }
+
+                    setSelectedEvent(null);
+                    setIsRegistering(false);
+                    setRegForm({ name: '', email: '', college: '', skills: '', whyInterested: '', resumeLink: '' });
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="space-y-4"
+                >
+                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Registration Details</h4>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Full Name*</label>
+                    <input
+                      type="text"
+                      value={regForm.name}
+                      onChange={(e) => setRegForm({ ...regForm, name: e.target.value })}
+                      required
+                      placeholder="Jane Doe"
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002a32]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Email Address*</label>
+                    <input
+                      type="email"
+                      value={regForm.email}
+                      onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
+                      required
+                      placeholder="jane.doe@university.edu"
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002a32]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Institution / College*</label>
+                    <input
+                      type="text"
+                      value={regForm.college}
+                      onChange={(e) => setRegForm({ ...regForm, college: e.target.value })}
+                      required
+                      placeholder="National Law School"
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002a32]"
+                    />
+                  </div>
+
+                  {/* Render additional fields for internships & programs */}
+                  {(selectedEvent.type === 'Internship' || selectedEvent.type.includes('Program')) && (
+                    <>
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Expertise & Skills</label>
+                        <input
+                          type="text"
+                          value={regForm.skills}
+                          onChange={(e) => setRegForm({ ...regForm, skills: e.target.value })}
+                          placeholder="e.g. Constitutional Law, Legal Research, Drafting"
+                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002a32]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Statement of Motivation</label>
+                        <textarea
+                          value={regForm.whyInterested}
+                          onChange={(e) => setRegForm({ ...regForm, whyInterested: e.target.value })}
+                          placeholder="Explain why you are interested in this opportunity..."
+                          rows="3"
+                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002a32] resize-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Resume Link (Google Drive/Dropbox)</label>
+                        <input
+                          type="url"
+                          value={regForm.resumeLink}
+                          onChange={(e) => setRegForm({ ...regForm, resumeLink: e.target.value })}
+                          placeholder="https://drive.google.com/file/d/..."
+                          className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002a32]"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="flex gap-3 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsRegistering(false)}
+                      className="flex-grow py-2.5 border border-gray-200 text-gray-600 rounded-lg text-xs font-bold transition hover:bg-gray-50 cursor-pointer"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-grow py-2.5 bg-[#8C6D23] hover:bg-[#a17e2b] text-white rounded-lg text-xs font-bold transition shadow-md cursor-pointer"
+                    >
+                      Confirm Registration
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <Footer />

@@ -246,7 +246,7 @@ const rejectBlog = async (req, res) => {
         rejectionReason
       },
       { new: true }
-    );
+    ).populate('author', 'email name');
 
     if (!blog) {
       return res.status(404).json({ 
@@ -255,9 +255,42 @@ const rejectBlog = async (req, res) => {
       });
     }
 
+    // Send rejection email to author
+    if (blog.author && blog.author.email) {
+      try {
+        const mailOptions = {
+          from: `Blog Platform <${process.env.YAHOO_EMAIL}>`,
+          to: blog.author.email,
+          subject: `Manuscript Rejected: ${blog.heading}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #d93025;">Hello ${blog.author.name || 'there'},</h2>
+              <p>We regret to inform you that your manuscript titled <strong>"${blog.heading}"</strong> has been rejected after editorial review.</p>
+              
+              <div style="background-color: #fdf2f2; border-left: 4px solid #d93025; padding: 12px; margin: 15px 0;">
+                <h3 style="color: #b0261d; margin-top: 0;">Rejection Feedback:</h3>
+                <p style="white-space: pre-wrap;">${rejectionReason || 'No specific reasons provided.'}</p>
+              </div>
+              
+              <p>We appreciate your interest in submitting your work to our platform. We encourage you to review our guidelines and consider submitting future research.</p>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                <p>Best regards,</p>
+                <p>The Editorial Board</p>
+              </div>
+            </div>
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
+      } catch (emailError) {
+        console.error('Failed to send rejection email:', emailError);
+      }
+    }
+
     res.status(200).json({ 
       success: true,
-      message: "Blog rejected", 
+      message: "Blog rejected and author notified", 
       data: blog 
     });
   } catch (error) {
@@ -324,6 +357,7 @@ const requestRevision = async (req, res) => {
         status: 'needs-revision', // This is the key change
         approvedBy: adminId,
         reviewComments,
+        isResubmitted: false,
         $inc: { revisionCount: 1 }
       },
       { new: true }
@@ -410,7 +444,7 @@ const countReviewBlogs = async (req, res) => {
 // Controller to fetch all blogs
 const getReviewBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find({ status: "needs-revision" });
+    const blogs = await Blog.find({ status: "needs-revision", isResubmitted: true });
 
     res.status(200).json({
       success: true,
@@ -450,6 +484,7 @@ const resubmitBlog = async (req, res) => {
         blogContent,
         heading,
         status: 'needs-revision', // Keep status as needs-revision
+        isResubmitted: true,
         lastSubmitted: new Date(),
         $inc: { revisionCount: 1 }
       },
@@ -478,6 +513,59 @@ const resubmitBlog = async (req, res) => {
   }
 };
 
+const getDashboardStats = async (req, res) => {
+  try {
+    const totalArticles = await Blog.countDocuments({ status: 'approved' });
+    const pendingApprovals = await Blog.countDocuments({ status: 'pending' });
+    const revisionRequests = await Blog.countDocuments({ status: 'needs-revision' });
+    
+    // Fetch upcoming events count
+    const Program = require("../Models/Program");
+    const MootCourt = require("../Models/MootCourt");
+    
+    const today = new Date();
+    const upcomingPrograms = await Program.countDocuments({ startDate: { $gt: today } });
+    const upcomingMoots = await MootCourt.countDocuments({ date: { $gt: today } });
+    const upcomingEvents = upcomingPrograms + upcomingMoots;
+
+    // Get top contributors
+    const topContributors = await Blog.aggregate([
+      { $match: { status: 'approved' } },
+      { 
+        $group: { 
+          _id: '$name',
+          university: { $first: '$university' },
+          count: { $sum: 1 } 
+        } 
+      },
+      { $sort: { count: -1 } },
+      { $limit: 3 }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalArticles,
+        pendingApprovals,
+        revisionRequests,
+        upcomingEvents,
+        topContributors: topContributors.map(c => ({
+          name: c._id,
+          university: c.university,
+          articlesCount: c.count
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch dashboard stats',
+      error: error.message
+    });
+  }
+};
+
 module.exports = { 
   getBlogs, 
   getBlogById, 
@@ -490,5 +578,6 @@ module.exports = {
   requestRevision,
   countReviewBlogs,
   resubmitBlog,
-  getReviewBlogs
+  getReviewBlogs,
+  getDashboardStats
 };

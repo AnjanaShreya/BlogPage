@@ -26,7 +26,8 @@ const blogSchema = new mongoose.Schema(
       default: 0
     },
     approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    rejectionReason: { type: String }
+    rejectionReason: { type: String },
+    isResubmitted: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

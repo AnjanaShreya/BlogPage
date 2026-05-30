@@ -49,7 +49,7 @@ const BlogDetailModal = ({
             {/* AUTHOR INFORMATION */}
             <div className="mb-6">
               <h3 className="text-[10px] font-extrabold text-[#8C6D23] uppercase tracking-widest mb-3">Author Information</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 shadow-sm">
                   <span className="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide">Full Name</span>
                   <span className="font-semibold text-gray-800 text-sm">{blog.name || "N/A"}</span>
@@ -68,13 +68,20 @@ const BlogDetailModal = ({
                 </div>
               </div>
             </div>
-
             <div className="w-full h-px bg-gray-100 mb-8"></div>
+
+            {/* PREVIOUS REVIEW COMMENTS */}
+            {blog.reviewComments && (
+              <div className="mb-8 p-6 bg-amber-50/50 border border-amber-200 rounded-xl text-left shadow-sm animate-in fade-in duration-200">
+                <h3 className="text-xs font-extrabold text-[#8C6D23] uppercase tracking-wider mb-2">Previous Review Feedback</h3>
+                <p className="text-sm text-gray-700 leading-relaxed font-sans whitespace-pre-wrap font-medium">{blog.reviewComments}</p>
+              </div>
+            )}
 
             {/* SUBMISSION METADATA */}
             <div className="mb-8">
               <h3 className="text-xs font-extrabold text-[#8C6D23] uppercase tracking-widest mb-4">Submission Metadata</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-12 mb-6">
                 <div>
                   <span className="block text-[11px] font-bold text-gray-400 mb-2">Category</span>
                   <div className="flex gap-2 flex-wrap">
@@ -88,6 +95,12 @@ const BlogDetailModal = ({
                   <span className="text-[#8C6D23] font-bold text-sm flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full border-2 border-[#8C6D23]"></div>
                     Pending Editorial Review
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold text-gray-400 mb-2">Reviews Count</span>
+                  <span className="bg-[#E0F2F1] text-[#004D40] font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider border border-[#B2DFDB]/40 inline-block font-sans select-none">
+                    {blog.revisionCount || 0} Rounds
                   </span>
                 </div>
               </div>
@@ -111,7 +124,7 @@ const BlogDetailModal = ({
               />
             </div>
 
-            {/* DEDICATED REVIEW EDITOR SECTION */}
+            {/* DEDICATED REVIEW EDITOR SECTION (Always Visible) */}
             <div className="mt-8 p-6 bg-[#8C6D23]/5 border border-[#8C6D23]/20 rounded-xl text-left space-y-4 shadow-inner">
               <h3 className="text-xs font-extrabold text-[#002a32] uppercase tracking-wider flex items-center gap-2">
                 <FiEdit2 className="text-[#8C6D23]" />
@@ -129,7 +142,7 @@ const BlogDetailModal = ({
                   type="button"
                   onClick={onRequestRevision}
                   disabled={!reviewComments || reviewComments.trim().length < 10 || isProcessing}
-                  className="px-6 py-2.5 bg-[#002a32] hover:bg-[#003d49] text-[#ecc260] font-bold text-xs rounded-lg transition disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-sm"
+                  className="px-6 py-2.5 bg-[#002a32] hover:bg-[#003d49] text-[#ecc260] font-bold text-xs rounded-lg transition disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-sm font-sans"
                 >
                   {isProcessing && actionType === 'request-revision' ? (
                     <FiLoader className="animate-spin text-sm" />
@@ -140,7 +153,7 @@ const BlogDetailModal = ({
                 </button>
               </div>
             </div>
-            
+
             {actionType === 'reject' && (
               <div className="mt-8 p-6 bg-red-50/50 border border-red-100 rounded-xl">
                 <label className="block font-bold text-red-800 mb-2 text-sm">Reason for Rejection</label>

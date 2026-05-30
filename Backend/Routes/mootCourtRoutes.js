@@ -5,6 +5,7 @@ const { verifyToken, requireAdmin } = require('../middleware/authMiddleware');
 
 // Public routes
 router.get('/', mootCourtController.getAllEvents);
+router.post('/:id/register', mootCourtController.registerForEvent);
 router.get('/:id', mootCourtController.getEventById);
 
 // Protected admin routes
@@ -12,5 +13,6 @@ router.post('/', verifyToken, requireAdmin, mootCourtController.createEvent);
 router.put('/:id', verifyToken, requireAdmin, mootCourtController.updateEvent);
 router.delete('/:id', verifyToken, requireAdmin, mootCourtController.deleteEvent);
 router.get('/count/upcoming', mootCourtController.getUpcomingMootCount);
+router.put('/:eventId/registrations/:regId', verifyToken, requireAdmin, mootCourtController.updateRegistrationStatus);
 
 module.exports = router;

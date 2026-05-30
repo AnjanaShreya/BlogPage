@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from './AdminComponents/AdminLayout';
 import { toast } from 'react-toastify';
 import { 
@@ -14,56 +13,105 @@ import {
 } from 'react-icons/fa';
 
 const Settings = () => {
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('Chief Editor');
   const [isOpen, setIsOpen] = useState(false);
+  const [subAdmins, setSubAdmins] = useState([]);
+  const [loading, setLoading] = useState(true);
   
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+
   const roles = [
     { value: 'Chief Editor', label: 'Chief Editor (All categories)' },
     { value: 'Blog Reviewer', label: 'Blog Reviewer (Articles only)' },
     { value: 'Moot Coordinator', label: 'Moot Coordinator (Moot Courts)' },
     { value: 'Academic Coordinator', label: 'Academic Coordinator (Summer/Winter Programs)' },
-    { value: 'Events Coordinator', label: 'Events Coordinator (Live Events)' },
+    { value: 'Internships Coordinator', label: 'Internships Coordinator (Internships)' },
   ];
 
-  const [subAdmins, setSubAdmins] = useState([
-    { id: 1, email: 'pranav.sharma@lexscripta.org', role: 'Chief Editor', status: 'Active', invitedAt: '2026-05-10' },
-    { id: 2, email: 'ananya.iyer@lexscripta.org', role: 'Blog Reviewer', status: 'Active', invitedAt: '2026-05-18' },
-    { id: 3, email: 'karan.malhotra@lexscripta.org', role: 'Moot Coordinator', status: 'Pending Invite', invitedAt: '2026-05-27' },
-  ]);
+  const fetchSubAdmins = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/auth/admin/subadmins`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const mapped = data.subadmins.map(sa => ({
+            id: sa._id,
+            email: sa.email,
+            role: sa.role,
+            status: sa.status || 'Active',
+            invitedAt: new Date(sa.createdAt).toISOString().split('T')[0]
+          }));
+          setSubAdmins(mapped);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching subadmins:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleInvite = (e) => {
+  useEffect(() => {
+    fetchSubAdmins();
+  }, []);
+
+  const handleInvite = async (e) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       toast.error('Please enter a valid email address.');
       return;
     }
 
-    // Dynamic UI-only simulation of sending invitation
-    const newSubAdmin = {
-      id: Date.now(),
-      email: email.trim(),
-      role: role,
-      status: 'Pending Invite',
-      invitedAt: new Date().toISOString().split('T')[0]
-    };
-
-    setSubAdmins(prev => [newSubAdmin, ...prev]);
-    toast.success(`Invitation successfully sent to ${email}! A secure registration link has been dispatched.`);
-    setEmail('');
+    try {
+      const response = await fetch(`${baseUrl}/auth/admin/create-subadmin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, role }),
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        toast.success(data.message);
+        setEmail('');
+        fetchSubAdmins();
+      } else {
+        toast.error(data.message || 'Failed to create sub-admin.');
+      }
+    } catch (error) {
+      console.error('Error inviting sub-admin:', error);
+      toast.error('Server error. Failed to invite sub-admin.');
+    }
   };
 
-  const handleDelete = (id, subAdminEmail) => {
+  const handleDelete = async (id, subAdminEmail) => {
     if (window.confirm(`Are you sure you want to revoke sub-admin access for ${subAdminEmail}?`)) {
-      setSubAdmins(prev => prev.filter(sa => sa.id !== id));
-      toast.success(`Access revoked for ${subAdminEmail}`);
+      try {
+        const response = await fetch(`${baseUrl}/auth/admin/subadmins/${id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          toast.success(data.message);
+          fetchSubAdmins();
+        } else {
+          toast.error(data.message || 'Failed to revoke access.');
+        }
+      } catch (error) {
+        console.error('Error deleting sub-admin:', error);
+        toast.error('Server error. Failed to revoke access.');
+      }
     }
   };
 
   return (
     <AdminLayout>
-      <main className="flex-grow overflow-y-auto p-6 md:p-8 space-y-6 bg-[#F9FAFB]">
+      <main className="flex-grow overflow-y-auto p-4 md:p-6 space-y-4 bg-[#F9FAFB]">
         
         {/* Page Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -82,7 +130,7 @@ const Settings = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* 1. LEFT SIDE: ADD SUB-ADMIN FORM */}
-          <div className="lg:col-span-1 bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div className="lg:col-span-1 bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm flex flex-col justify-between lg:h-[460px]">
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-[#E0F2F1] text-[#004D40] flex items-center justify-center text-lg">
@@ -186,8 +234,8 @@ const Settings = () => {
           </div>
 
           {/* 2. RIGHT SIDE: ACTIVE SUB-ADMINS LIST */}
-          <div className="lg:col-span-2 bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
+          <div className="lg:col-span-2 bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm flex flex-col lg:h-[460px]">
+            <div className="flex justify-between items-center mb-6 flex-shrink-0">
               <div>
                 <h3 className="text-lg font-bold text-[#002a32] font-serif">Active Administrators</h3>
                 <p className="text-[11px] text-gray-400 font-medium">Currently registered team members</p>
@@ -198,7 +246,7 @@ const Settings = () => {
             </div>
 
             {/* List Table */}
-            <div className="border border-gray-150 rounded-xl overflow-hidden divide-y divide-gray-100">
+            <div className="border border-gray-150 rounded-xl overflow-hidden divide-y divide-gray-100 overflow-y-auto flex-grow pr-1">
               {subAdmins.map((subAdmin) => (
                 <div key={subAdmin.id} className="p-4 bg-white hover:bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all">
                   <div className="flex items-center gap-3">

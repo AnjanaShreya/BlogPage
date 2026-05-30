@@ -20,6 +20,8 @@ import OnlyBlogReview from './AdminPages/SubAdmin/OnlyBlogReview';
 import SAApprove from './AdminPages/SubAdmin/SAApprove';
 import SAReviews from './AdminPages/SubAdmin/SAReviews';
 import Settings from './AdminPages/Settings';
+import SetupPassword from './AdminPages/SetupPassword';
+import Internships from './AdminPages/Internships';
 import { AuthProvider } from './context/AuthContext';
 
 
@@ -58,6 +60,7 @@ function App() {
 
             {/* Auth Routes */}
             <Route path='/admin/login' element={<AdminLogin />} />
+            <Route path='/admin/setup-password' element={<SetupPassword />} />
 
             {/* Protected Admin Routes */}
             <Route path='/admin/dashboard' element={
@@ -75,6 +78,12 @@ function App() {
             <Route path="/admin/swprograms" element={
               // <AdminRoute>
               <SWPrograms />
+              // </AdminRoute>
+            } />
+
+            <Route path="/admin/internships" element={
+              // <AdminRoute>
+              <Internships />
               // </AdminRoute>
             } />
 

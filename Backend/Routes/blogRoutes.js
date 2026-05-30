@@ -21,6 +21,7 @@ router.get('/blogs/review', verifyToken, requireAdmin, blogController.getReviewB
 
 // Add these routes to your blogRoutes.js
 // router.get('/blogs/review', blogController.getReviewBlogs);
+router.get("/blogs/dashboard-stats", verifyToken, requireAdmin, blogController.getDashboardStats);
 router.put('/blogs/resubmit/:id', blogController.resubmitBlog);
 router.get("/blogs/:id", blogController.getBlogById); 
 
