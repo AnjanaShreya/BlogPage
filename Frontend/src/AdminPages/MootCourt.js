@@ -112,6 +112,7 @@ const MootCourt = () => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user?.role, navigate]);
 
   const fetchEvents = async () => {
@@ -623,7 +624,7 @@ const MootCourt = () => {
                 </h2>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {activeEvents.map(event => renderCard(event, true))}
-                  
+
                   {/* New Event dashed card */}
                   <div
                     onClick={startAddingEvent}
