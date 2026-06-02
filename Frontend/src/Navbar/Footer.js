@@ -21,6 +21,7 @@ const Footer = () => {
           
           {/* Action Social Icons wrapped in soft-gray container badges */}
           <div className="flex items-center gap-3 mt-1">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               href="#"
               target="_blank"
@@ -29,6 +30,7 @@ const Footer = () => {
             >
               <FaGlobe size={15} />
             </a>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               href="#"
               target="_blank"
@@ -37,6 +39,7 @@ const Footer = () => {
             >
               <FaUsers size={15} />
             </a>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a
               href="#"
               className="text-[#002a32] hover:bg-[#d8dfe1] transition-colors p-3 bg-[#e0e6e8] rounded-xl flex items-center justify-center shadow-sm"

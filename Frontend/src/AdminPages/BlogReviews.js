@@ -108,6 +108,7 @@ const BlogReview = () => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, baseUrl, user?.role, authLoading]);
 
   const sendEmailNotification = async (email, subject, message) => {

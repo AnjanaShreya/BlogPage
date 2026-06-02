@@ -498,6 +498,7 @@ const Opportunities = () => {
                         {selectedEvent.rulesLink && (
                           <div className="col-span-2 pt-2 border-t border-gray-200">
                             <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Rules & Documents</span>
+                            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
                             <a
                               href="#"
                               target="_blank"

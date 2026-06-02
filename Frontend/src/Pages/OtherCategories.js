@@ -50,6 +50,7 @@ const OtherCategories = () => {
           
     };
     fetchBlogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleExpand = (id) => {

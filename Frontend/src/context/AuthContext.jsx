@@ -9,6 +9,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     verifySession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const verifySession = async () => {

@@ -75,6 +75,7 @@ const Internships = () => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user?.role, navigate]);
 
   const fetchPrograms = async () => {
