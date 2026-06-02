@@ -13,31 +13,33 @@ const emailRoutes = require('./Routes/emailRoutes');
 
 const app = express();
 
-// Database connection
-prisma.$connect()
-  .then(async () => {
-    console.log('✅ Neon PostgreSQL (Prisma) connected successfully');
-    
-    // Auto-fix/restore setup-password token for user 'nicimid755@doreact.com' if needed
-    try {
-      const email = 'nicimid755@doreact.com';
-      const token = '6f27f5eb48ec8bfb8f832676abea1bc02bcd3cf8e28621736534c9485bfb28bf';
-      const user = await prisma.user.findUnique({ where: { email } });
-      if (user && user.inviteToken !== token) {
-        await prisma.user.update({
-          where: { email },
-          data: { inviteToken: token }
-        });
-        console.log(`🔧 Restored inviteToken for ${email} successfully.`);
+// Database connection (Only run explicit connection and seed check in local development)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  prisma.$connect()
+    .then(async () => {
+      console.log('✅ Neon PostgreSQL (Prisma) connected successfully');
+      
+      // Auto-fix/restore setup-password token for user 'nicimid755@doreact.com' if needed
+      try {
+        const email = 'nicimid755@doreact.com';
+        const token = '6f27f5eb48ec8bfb8f832676abea1bc02bcd3cf8e28621736534c9485bfb28bf';
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (user && user.inviteToken !== token) {
+          await prisma.user.update({
+            where: { email },
+            data: { inviteToken: token }
+          });
+          console.log(`🔧 Restored inviteToken for ${email} successfully.`);
+        }
+      } catch (dbErr) {
+        console.error('Failed to restore inviteToken for user:', dbErr);
       }
-    } catch (dbErr) {
-      console.error('Failed to restore inviteToken for user:', dbErr);
-    }
-  })
-  .catch(err => {
-    console.error('❌ Neon PostgreSQL connection error:', err);
-    process.exit(1);
-  });
+    })
+    .catch(err => {
+      console.error('❌ Neon PostgreSQL connection error:', err);
+      process.exit(1);
+    });
+}
 
 // Middleware
 app.use(cors({

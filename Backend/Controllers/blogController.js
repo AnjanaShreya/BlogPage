@@ -379,6 +379,7 @@ const requestRevision = async (req, res) => {
 
     // Send email to author
     try {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
       const mailOptions = {
         from: `Blog Platform <${process.env.YAHOO_EMAIL}>`,
         to: blog.author.email,
@@ -396,7 +397,7 @@ const requestRevision = async (req, res) => {
             <p>Please make the requested changes and resubmit your blog for review.</p>
             
             <div style="margin: 20px 0; text-align: center;">
-              <a href="http://localhost:3000/reviewsubmission/${blog.id}" 
+              <a href="${frontendUrl}/reviewsubmission/${blog.id}" 
                 style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
                 Edit and Resubmit Your Blog
               </a>
