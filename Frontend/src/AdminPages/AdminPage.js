@@ -16,6 +16,7 @@ import AdminLayout from './AdminComponents/AdminLayout';
 
 const AdminPage = () => {
   const navigate = useNavigate();
+  // eslint-disable-next-line no-unused-vars
   const { user, loading, verifySession, logout } = useAuth();
 
   // Dashboard states
@@ -31,10 +32,11 @@ const AdminPage = () => {
   });
 
   const [pendingBlogs, setPendingBlogs] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [reviewBlogs, setReviewBlogs] = useState([]);
   const [mootCourts, setMootCourts] = useState([]);
   const [topContributors, setTopContributors] = useState([]);
-
+  // eslint-disable-next-line no-unused-vars
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Selected blog modal state
@@ -135,6 +137,7 @@ const AdminPage = () => {
     if (!loading) {
       checkAuthAndFetch();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, user?.role, navigate]);
 
   // Actions handlers
@@ -233,11 +236,6 @@ const AdminPage = () => {
       setIsProcessing(false);
       setActionType(null);
     }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/admin/login');
   };
 
   if (loading) {

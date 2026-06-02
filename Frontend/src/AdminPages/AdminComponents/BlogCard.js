@@ -1,15 +1,12 @@
 import React from 'react';
-import { FiClock, FiEye, FiCheck, FiX } from "react-icons/fi";
-import { FaAlignLeft } from "react-icons/fa";
+import { FiClock, FiX } from "react-icons/fi";
 
 const BlogCard = ({
   blog,
   onView,
   onApprove,
   onReject,
-  onRequestRevision,
   isProcessing,
-  actionType,
 }) => {
   const getInitials = (name) => {
     if (!name) return "U";

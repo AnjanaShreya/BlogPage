@@ -12,6 +12,7 @@ const ApproveBlogs = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [reviewComments, setReviewComments] = useState("");
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
   const [filterCategory, setFilterCategory] = useState("All Categories");
   const [sortOrder, setSortOrder] = useState("Newest First");
@@ -108,8 +109,10 @@ const ApproveBlogs = () => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, baseUrl, user?.role, authLoading]);
 
+  // eslint-disable-next-line no-unused-vars
   const fetchPendingBlogs = async () => {
     try {
       setLoading(true);
