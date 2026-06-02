@@ -1,45 +1,52 @@
-const mongoose = require('mongoose');
-const Blog = require("../Models/blogModel");
-const User = require("../Models/User");
+const { prisma, isValidUUID, formatPrisma } = require("../config/prisma");
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.mail.yahoo.com',
   port: 465,
-  secure: true, // true for 465, false for other ports
+  secure: true,
   auth: {
     user: process.env.YAHOO_EMAIL,
     pass: process.env.YAHOO_APP_PASSWORD
   },
-  debug: true, // This will show detailed logs
-  logger: true // This will log the SMTP connection
+  debug: true,
+  logger: true
 });
 
 // Controller to fetch all blogs
 const getBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find();
-    res.status(200).json(blogs);
+    const blogs = await prisma.blog.findMany();
+    res.status(200).json(formatPrisma(blogs));
   } catch (error) {
-    console.error(error);
+    console.error("Get Blogs Error:", error);
     res.status(500).json({ message: "Error while fetching blogs." });
   }
 };
 
 const getBlogById = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    if (!isValidUUID(req.params.id)) {
       return res.status(400).json({ 
         success: false,
         message: "Invalid blog ID format"
       });
     }
 
-    const blog = await Blog.findOne({ 
-      _id: req.params.id,
-      status: { $in: ['approved', 'needs-revision'] }
-    }).populate('author', 'email'); 
+    const blog = await prisma.blog.findFirst({ 
+      where: {
+        id: req.params.id,
+        status: { in: ['approved', 'needs-revision'] }
+      },
+      include: {
+        author: {
+          select: {
+            email: true
+          }
+        }
+      }
+    });
     
     if (!blog) {
       return res.status(404).json({ 
@@ -50,10 +57,10 @@ const getBlogById = async (req, res) => {
     
     res.status(200).json({
       success: true,
-      data: blog
+      data: formatPrisma(blog)
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get Blog By ID Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error fetching blog.",
@@ -77,7 +84,9 @@ const createBlog = async (req, res) => {
 
     // Verify token and get user ID
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
     
     if (!user) {
       return res.status(404).json({ 
@@ -86,25 +95,25 @@ const createBlog = async (req, res) => {
       });
     }
 
-    const newBlog = new Blog({
-      name,
-      university,
-      degree,
-      year,
-      shortBio,
-      category,
-      blogContent,
-      heading,
-      status: 'pending',
-      author: user._id
+    const newBlog = await prisma.blog.create({
+      data: {
+        name,
+        university,
+        degree,
+        year,
+        shortBio,
+        category,
+        blogContent,
+        heading,
+        status: 'pending',
+        authorId: user.id
+      }
     });
-
-    await newBlog.save();
 
     // Send email notification
     try {
       const mailOptions = {
-        from: `Blog Platform <${process.env.YAHOO_EMAIL}>`, // Changed from EMAIL_USER to YAHOO_EMAIL
+        from: `Blog Platform <${process.env.YAHOO_EMAIL}>`,
         to: user.email,
         subject: 'Blog Submission Received',
         html: `
@@ -125,18 +134,17 @@ const createBlog = async (req, res) => {
       console.log('Email sent successfully');
     } catch (emailError) {
       console.error('Email sending failed:', {
-        message: emailError.message,  // Fixed: using emailError instead of error
+        message: emailError.message,
         stack: emailError.stack,
         response: emailError.response,
         code: emailError.code
       });
-      // Continue even if email fails
     }
 
     res.status(201).json({ 
       success: true,
       message: "Blog submitted successfully!", 
-      data: newBlog 
+      data: formatPrisma(newBlog) 
     });
 
   } catch (error) {
@@ -160,16 +168,24 @@ const createBlog = async (req, res) => {
 // In your admin controller
 const getPendingBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find({ status: 'pending' })
-      .populate('author', 'email') // Populate author's email
-      .populate('approvedBy', 'email'); // If needed
+    const blogs = await prisma.blog.findMany({
+      where: { status: 'pending' },
+      include: {
+        author: {
+          select: { email: true }
+        },
+        approvedBy: {
+          select: { email: true }
+        }
+      }
+    });
     
     res.status(200).json({ 
       success: true,
-      data: blogs 
+      data: formatPrisma(blogs) 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get Pending Blogs Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error while fetching pending blogs.",
@@ -184,38 +200,29 @@ const approveBlog = async (req, res) => {
     const { id } = req.params;
     const { adminId } = req.body;
 
-  
     // Validate the ID format first
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!isValidUUID(id)) {
       return res.status(400).json({ 
         success: false,
         message: "Invalid blog ID format"
       });
     }
 
-    const blog = await Blog.findByIdAndUpdate(
-      id,
-      { 
+    const blog = await prisma.blog.update({
+      where: { id },
+      data: {
         status: 'approved',
-        approvedBy: adminId
-      },
-      { new: true }
-    );
-
-    if (!blog) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Blog not found" 
-      });
-    }
+        approvedById: adminId
+      }
+    });
 
     res.status(200).json({ 
       success: true,
       message: "Blog approved successfully", 
-      data: blog 
+      data: formatPrisma(blog) 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Approve Blog Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error approving blog.",
@@ -231,29 +238,26 @@ const rejectBlog = async (req, res) => {
     const { adminId, rejectionReason } = req.body;
 
     // Validate the ID format first
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!isValidUUID(id)) {
       return res.status(400).json({ 
         success: false,
         message: "Invalid blog ID format"
       });
     }
 
-    const blog = await Blog.findByIdAndUpdate(
-      id,
-      { 
+    const blog = await prisma.blog.update({
+      where: { id },
+      data: {
         status: 'rejected',
-        approvedBy: adminId,
+        approvedById: adminId,
         rejectionReason
       },
-      { new: true }
-    ).populate('author', 'email name');
-
-    if (!blog) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Blog not found" 
-      });
-    }
+      include: {
+        author: {
+          select: { email: true }
+        }
+      }
+    });
 
     // Send rejection email to author
     if (blog.author && blog.author.email) {
@@ -264,7 +268,7 @@ const rejectBlog = async (req, res) => {
           subject: `Manuscript Rejected: ${blog.heading}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #d93025;">Hello ${blog.author.name || 'there'},</h2>
+              <h2 style="color: #d93025;">Hello there,</h2>
               <p>We regret to inform you that your manuscript titled <strong>"${blog.heading}"</strong> has been rejected after editorial review.</p>
               
               <div style="background-color: #fdf2f2; border-left: 4px solid #d93025; padding: 12px; margin: 15px 0;">
@@ -291,10 +295,10 @@ const rejectBlog = async (req, res) => {
     res.status(200).json({ 
       success: true,
       message: "Blog rejected and author notified", 
-      data: blog 
+      data: formatPrisma(blog) 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Reject Blog Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error rejecting blog.",
@@ -306,13 +310,15 @@ const rejectBlog = async (req, res) => {
 // Get all approved blogs
 const getApprovedBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find({ status: 'approved' });
+    const blogs = await prisma.blog.findMany({
+      where: { status: 'approved' }
+    });
     res.status(200).json({ 
       success: true,
-      data: blogs 
+      data: formatPrisma(blogs) 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get Approved Blogs Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error while fetching approved blogs.",
@@ -324,13 +330,15 @@ const getApprovedBlogs = async (req, res) => {
 // Count pending blogs
 const countPendingBlogs = async (req, res) => {
   try {
-    const count = await Blog.countDocuments({ status: 'pending' });
+    const count = await prisma.blog.count({
+      where: { status: 'pending' }
+    });
     res.status(200).json({ 
       success: true,
       count 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Count Pending Blogs Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error counting pending blogs",
@@ -344,31 +352,30 @@ const requestRevision = async (req, res) => {
     const { id } = req.params;
     const { adminId, reviewComments } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!isValidUUID(id)) {
       return res.status(400).json({ 
         success: false,
         message: "Invalid blog ID format"
       });
     }
 
-    const blog = await Blog.findByIdAndUpdate(
-      id,
-      { 
-        status: 'needs-revision', // This is the key change
-        approvedBy: adminId,
+    const blog = await prisma.blog.update({
+      where: { id },
+      data: {
+        status: 'needs-revision',
+        approvedById: adminId,
         reviewComments,
         isResubmitted: false,
-        $inc: { revisionCount: 1 }
+        revisionCount: {
+          increment: 1
+        }
       },
-      { new: true }
-    ).populate('author', 'email name');
-
-    if (!blog) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Blog not found" 
-      });
-    }
+      include: {
+        author: {
+          select: { email: true }
+        }
+      }
+    });
 
     // Send email to author
     try {
@@ -378,7 +385,7 @@ const requestRevision = async (req, res) => {
         subject: `Revision Request for Your Blog: ${blog.heading}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #2d3748;">Hello ${blog.author.name || 'there'},</h2>
+            <h2 style="color: #2d3748;">Hello there,</h2>
             <p>Your blog titled <strong>"${blog.heading}"</strong> requires revisions before it can be approved.</p>
             
             <div style="background-color: #f8fafc; border-left: 4px solid #f59e0b; padding: 12px; margin: 15px 0;">
@@ -389,7 +396,7 @@ const requestRevision = async (req, res) => {
             <p>Please make the requested changes and resubmit your blog for review.</p>
             
             <div style="margin: 20px 0; text-align: center;">
-              <a href="http://localhost:3000/reviewsubmission/${blog._id}" 
+              <a href="http://localhost:3000/reviewsubmission/${blog.id}" 
                 style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
                 Edit and Resubmit Your Blog
               </a>
@@ -411,10 +418,10 @@ const requestRevision = async (req, res) => {
     res.status(200).json({ 
       success: true,
       message: "Revision requested successfully", 
-      data: blog 
+      data: formatPrisma(blog) 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Request Revision Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error requesting revision",
@@ -423,16 +430,18 @@ const requestRevision = async (req, res) => {
   }
 };
 
-// Count pending blogs
+// Count review blogs
 const countReviewBlogs = async (req, res) => {
   try {
-    const count = await Blog.countDocuments({ status: 'needs-revision' });
+    const count = await prisma.blog.count({
+      where: { status: 'needs-revision' }
+    });
     res.status(200).json({ 
       success: true,
       count 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Count Review Blogs Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error counting pending blogs",
@@ -441,17 +450,22 @@ const countReviewBlogs = async (req, res) => {
   }
 };
 
-// Controller to fetch all blogs
+// Fetch blogs needing revision
 const getReviewBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find({ status: "needs-revision", isResubmitted: true });
+    const blogs = await prisma.blog.findMany({
+      where: {
+        status: "needs-revision",
+        isResubmitted: true
+      }
+    });
 
     res.status(200).json({
       success: true,
-      data: blogs,
+      data: formatPrisma(blogs),
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get Review Blogs Error:", error);
     res.status(500).json({
       success: false,
       message: "Error while fetching blogs needing revision.",
@@ -465,16 +479,16 @@ const resubmitBlog = async (req, res) => {
     const { id } = req.params;
     const { name, university, degree, year, shortBio, category, blogContent, heading } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!isValidUUID(id)) {
       return res.status(400).json({ 
         success: false,
         message: "Invalid blog ID format"
       });
     }
 
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      id,
-      {
+    const updatedBlog = await prisma.blog.update({
+      where: { id },
+      data: {
         name,
         university,
         degree,
@@ -485,26 +499,24 @@ const resubmitBlog = async (req, res) => {
         heading,
         status: 'needs-revision', // Keep status as needs-revision
         isResubmitted: true,
-        lastSubmitted: new Date(),
-        $inc: { revisionCount: 1 }
+        revisionCount: {
+          increment: 1
+        }
       },
-      { new: true }
-    ).populate('author', 'email name');
-
-    if (!updatedBlog) {
-      return res.status(404).json({
-        success: false,
-        message: "Blog not found"
-      });
-    }
+      include: {
+        author: {
+          select: { email: true }
+        }
+      }
+    });
 
     res.status(200).json({ 
       success: true,
       message: "Blog updated successfully",
-      data: updatedBlog 
+      data: formatPrisma(updatedBlog) 
     });
   } catch (error) {
-    console.error(error);
+    console.error("Resubmit Blog Error:", error);
     res.status(500).json({ 
       success: false,
       message: "Error updating blog",
@@ -515,32 +527,35 @@ const resubmitBlog = async (req, res) => {
 
 const getDashboardStats = async (req, res) => {
   try {
-    const totalArticles = await Blog.countDocuments({ status: 'approved' });
-    const pendingApprovals = await Blog.countDocuments({ status: 'pending' });
-    const revisionRequests = await Blog.countDocuments({ status: 'needs-revision' });
-    
-    // Fetch upcoming events count
-    const Program = require("../Models/Program");
-    const MootCourt = require("../Models/MootCourt");
+    const totalArticles = await prisma.blog.count({ where: { status: 'approved' } });
+    const pendingApprovals = await prisma.blog.count({ where: { status: 'pending' } });
+    const revisionRequests = await prisma.blog.count({ where: { status: 'needs-revision' } });
     
     const today = new Date();
-    const upcomingPrograms = await Program.countDocuments({ startDate: { $gt: today } });
-    const upcomingMoots = await MootCourt.countDocuments({ date: { $gt: today } });
+    const upcomingPrograms = await prisma.program.count({ where: { startDate: { gt: today } } });
+    const upcomingMoots = await prisma.mootCourt.count({ where: { date: { gt: today } } });
     const upcomingEvents = upcomingPrograms + upcomingMoots;
 
     // Get top contributors
-    const topContributors = await Blog.aggregate([
-      { $match: { status: 'approved' } },
-      { 
-        $group: { 
-          _id: '$name',
-          university: { $first: '$university' },
-          count: { $sum: 1 } 
-        } 
+    const rawContributors = await prisma.blog.groupBy({
+      by: ['name', 'university'],
+      where: { status: 'approved' },
+      _count: {
+        id: true
       },
-      { $sort: { count: -1 } },
-      { $limit: 3 }
-    ]);
+      orderBy: {
+        _count: {
+          id: 'desc'
+        }
+      },
+      take: 3
+    });
+
+    const topContributors = rawContributors.map(c => ({
+      name: c.name,
+      university: c.university,
+      articlesCount: c._count.id
+    }));
 
     res.status(200).json({
       success: true,
@@ -549,11 +564,7 @@ const getDashboardStats = async (req, res) => {
         pendingApprovals,
         revisionRequests,
         upcomingEvents,
-        topContributors: topContributors.map(c => ({
-          name: c._id,
-          university: c.university,
-          articlesCount: c.count
-        }))
+        topContributors
       }
     });
   } catch (error) {

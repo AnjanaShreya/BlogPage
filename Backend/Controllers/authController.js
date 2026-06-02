@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../Models/User");
+const { prisma, formatPrisma } = require("../config/prisma");
 
 // Cookie options
 const cookieOptions = {
@@ -14,7 +14,9 @@ const cookieOptions = {
 exports.signup = async (req, res) => {
   const { email, password, role } = req.body;
   try {
-    const existing = await User.findOne({ email });
+    const existing = await prisma.user.findUnique({
+      where: { email }
+    });
     if (existing) return res.status(400).json({ message: "User already exists" });
 
     // Prevent admin signup without proper authorization
@@ -23,14 +25,16 @@ exports.signup = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 12);
-    const newUser = await User.create({ 
-      email, 
-      password: hashed,
-      role: role || 'user' // Default to user if not specified
+    const newUser = await prisma.user.create({ 
+      data: {
+        email, 
+        password: hashed,
+        role: role || 'user' // Default to user if not specified
+      }
     });
 
     const token = jwt.sign({ 
-      id: newUser._id,
+      id: newUser.id,
       role: newUser.role // Include role in token
     }, process.env.JWT_SECRET, { expiresIn: "1h" });
     
@@ -40,6 +44,7 @@ exports.signup = async (req, res) => {
       role: newUser.role
     });
   } catch (err) {
+    console.error("Signup Error:", err);
     res.status(500).json({ message: "Error in Signup" });
   }
 };
@@ -48,14 +53,16 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign({ 
-      id: user._id,
+      id: user.id,
       role: user.role // Include role in token
     }, process.env.JWT_SECRET, { expiresIn: "1h" });
     
@@ -65,6 +72,7 @@ exports.signin = async (req, res) => {
       role: user.role,
     });
   } catch (err) {
+    console.error("Signin Error:", err);
     res.status(500).json({ message: "Error in Signin" });
   }
 };
@@ -79,7 +87,9 @@ exports.adminSignin = async (req, res) => {
   console.log("- Normalized Email:", normalizedEmail);
   
   try {
-    const user = await User.findOne({ email: normalizedEmail });
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail }
+    });
     if (!user) {
       console.log("❌ [LOGIN DEBUG] User NOT found in database.");
       return res.status(404).json({ message: "User not found" });
@@ -109,7 +119,7 @@ exports.adminSignin = async (req, res) => {
     console.log("🎉 [LOGIN DEBUG] Login SUCCESS!");
 
     const token = jwt.sign({ 
-      id: user._id,
+      id: user.id,
       role: user.role
     }, process.env.JWT_SECRET, { expiresIn: "1h" });
     
@@ -117,7 +127,7 @@ exports.adminSignin = async (req, res) => {
     res.status(200).json({ 
       message: "Logged in successfully",
       role: user.role,
-      userId: user._id 
+      userId: user.id 
     });
   } catch (err) {
     console.error("🚨 [LOGIN DEBUG] Server Error:", err);
@@ -180,7 +190,9 @@ exports.verifySession = async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
     
     if (!user) {
       return res.status(200).json({ isValid: false });
@@ -188,7 +200,7 @@ exports.verifySession = async (req, res) => {
 
     return res.status(200).json({ 
       isValid: true,
-      userId: user._id,
+      userId: user.id,
       role: user.role
     });
   } catch (err) {
@@ -207,7 +219,9 @@ exports.createSubAdmin = async (req, res) => {
   const normalizedEmail = email.trim().toLowerCase();
 
   try {
-    const existing = await User.findOne({ email: normalizedEmail });
+    const existing = await prisma.user.findUnique({
+      where: { email: normalizedEmail }
+    });
     if (existing) {
       return res.status(400).json({ success: false, message: "User with this email already exists" });
     }
@@ -218,12 +232,14 @@ exports.createSubAdmin = async (req, res) => {
     const tempPassword = crypto.randomBytes(16).toString('hex');
     const hashed = await bcrypt.hash(tempPassword, 12);
 
-    const newSubAdmin = await User.create({
-      email: normalizedEmail,
-      password: hashed,
-      role: role,
-      status: 'Pending Invite',
-      inviteToken: token
+    const newSubAdmin = await prisma.user.create({
+      data: {
+        email: normalizedEmail,
+        password: hashed,
+        role: role,
+        status: 'Pending Invite',
+        inviteToken: token
+      }
     });
 
     // Send email using nodemailer
@@ -300,9 +316,25 @@ exports.createSubAdmin = async (req, res) => {
 // Retrieve all administrative / sub-admin accounts
 exports.getSubAdmins = async (req, res) => {
   try {
-    const subadmins = await User.find({ role: { $ne: 'user' } }).select('-password');
-    res.status(200).json({ success: true, subadmins });
+    const subadmins = await prisma.user.findMany({
+      where: {
+        role: {
+          not: "user"
+        }
+      }
+    });
+    
+    // Remove passwords
+    subadmins.forEach(user => {
+      delete user.password;
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      subadmins: formatPrisma(subadmins) 
+    });
   } catch (error) {
+    console.error("Get Sub-Admins Error:", error);
     res.status(500).json({ success: false, message: "Failed to fetch sub-admins" });
   }
 };
@@ -311,12 +343,13 @@ exports.getSubAdmins = async (req, res) => {
 exports.deleteSubAdmin = async (req, res) => {
   const { id } = req.params;
   try {
-    const deleted = await User.findByIdAndDelete(id);
-    if (!deleted) {
-      return res.status(404).json({ success: false, message: "Sub-admin not found" });
-    }
+    const deleted = await prisma.user.delete({
+      where: { id }
+    });
+    
     res.status(200).json({ success: true, message: "Access successfully revoked" });
   } catch (error) {
+    console.error("Delete Sub-Admin Error:", error);
     res.status(500).json({ success: false, message: "Failed to delete sub-admin" });
   }
 };
@@ -332,16 +365,26 @@ exports.setupPassword = async (req, res) => {
   const normalizedEmail = email.trim().toLowerCase();
 
   try {
-    const user = await User.findOne({ email: normalizedEmail, inviteToken: token });
+    const user = await prisma.user.findFirst({
+      where: {
+        email: normalizedEmail,
+        inviteToken: token
+      }
+    });
+
     if (!user) {
       return res.status(400).json({ success: false, message: "Invalid or expired invitation link" });
     }
 
     const hashed = await bcrypt.hash(password, 12);
-    user.password = hashed;
-    user.status = 'Active';
-    user.inviteToken = null;
-    await user.save();
+    
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashed,
+        status: "Active"
+      }
+    });
 
     res.status(200).json({ success: true, message: "Password updated successfully! You can now log in." });
   } catch (error) {

@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
+const { prisma } = require('./config/prisma');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
@@ -14,10 +14,28 @@ const emailRoutes = require('./Routes/emailRoutes');
 const app = express();
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB connected successfully'))
+prisma.$connect()
+  .then(async () => {
+    console.log('✅ Neon PostgreSQL (Prisma) connected successfully');
+    
+    // Auto-fix/restore setup-password token for user 'nicimid755@doreact.com' if needed
+    try {
+      const email = 'nicimid755@doreact.com';
+      const token = '6f27f5eb48ec8bfb8f832676abea1bc02bcd3cf8e28621736534c9485bfb28bf';
+      const user = await prisma.user.findUnique({ where: { email } });
+      if (user && user.inviteToken !== token) {
+        await prisma.user.update({
+          where: { email },
+          data: { inviteToken: token }
+        });
+        console.log(`🔧 Restored inviteToken for ${email} successfully.`);
+      }
+    } catch (dbErr) {
+      console.error('Failed to restore inviteToken for user:', dbErr);
+    }
+  })
   .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
+    console.error('❌ Neon PostgreSQL connection error:', err);
     process.exit(1);
   });
 
@@ -38,11 +56,20 @@ app.use('/api/internships', internshipRoutes);
 app.use('/api/email', emailRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK',
-    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
-  });
+app.get('/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ 
+      status: 'OK',
+      database: 'Connected'
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      status: 'Error',
+      database: 'Disconnected',
+      error: err.message
+    });
+  }
 });
 
 // Error handling middleware

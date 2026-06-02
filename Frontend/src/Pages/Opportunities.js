@@ -73,7 +73,8 @@ const Opportunities = () => {
     ...dbMootCourts.map(item => ({
       id: item._id,
       title: item.title,
-      description: stripHtml(item.description) || 'Discover key details and register for this premier moot court competition.',
+      description: stripHtml(item.description) || 'N/A',
+      rawDescription: item.description || 'N/A',
       type: 'Moot Court',
       status: item.status || 'Upcoming',
       statusType: 'upcoming',
@@ -97,7 +98,8 @@ const Opportunities = () => {
     ...dbPrograms.map(item => ({
       id: item._id,
       title: item.title,
-      description: stripHtml(item.description) || 'Elevate your learning through our dedicated summer and winter legal academic programs.',
+      description: stripHtml(item.description) || 'N/A',
+      rawDescription: item.description || 'N/A',
       type: item.programType === 'winter' ? 'Winter Program' : 'Summer Program',
       status: item.status || 'Active',
       statusType: 'upcoming',
@@ -115,7 +117,8 @@ const Opportunities = () => {
     ...dbInternships.map(item => ({
       id: item._id,
       title: item.title,
-      description: stripHtml(item.description) || 'Elevate your learning through our dedicated summer and winter legal academic programs.',
+      description: stripHtml(item.description) || 'N/A',
+      rawDescription: item.description || 'N/A',
       type: 'Internship',
       status: item.status || 'Active',
       statusType: 'upcoming',
@@ -456,9 +459,10 @@ const Opportunities = () => {
                   {/* Detailed Description */}
                   <div>
                     <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">About the Event</h4>
-                    <p className="text-sm text-gray-700 leading-relaxed font-sans">
-                      {selectedEvent.description}
-                    </p>
+                    <div 
+                      className="text-sm text-gray-700 leading-relaxed font-sans whitespace-pre-line"
+                      dangerouslySetInnerHTML={{ __html: selectedEvent.rawDescription }}
+                    />
                   </div>
 
                   {selectedEvent.isMootCourt ? (
@@ -495,7 +499,7 @@ const Opportunities = () => {
                           <div className="col-span-2 pt-2 border-t border-gray-200">
                             <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Rules & Documents</span>
                             <a
-                              href={selectedEvent.rulesLink}
+                              href="#"
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-xs font-bold text-blue-650 hover:underline inline-flex items-center gap-1"

@@ -12,6 +12,8 @@ import {
   FaTrash,
   FaTimes
 } from 'react-icons/fa';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 
 
@@ -362,15 +364,38 @@ const MootCourt = () => {
                 {/* Description */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Description*</label>
-                  <textarea
-                    name="description"
-                    value={currentEvent.description}
-                    onChange={handleChange}
-                    placeholder="Provide deep description of moot court topic, parameters, case study details..."
-                    rows="4"
-                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#002a32] focus:border-[#002a32] transition-colors"
-                    required
-                  />
+                  <div className="bg-white rounded-md">
+                    <style>{`
+                      .custom-quill .ql-toolbar.ql-snow {
+                        border: 1px solid #e5e7eb !important;
+                        border-top-left-radius: 0.375rem;
+                        border-top-right-radius: 0.375rem;
+                      }
+                      .custom-quill .ql-container.ql-snow {
+                        border: 1px solid #e5e7eb !important;
+                        border-top: none !important;
+                        border-bottom-left-radius: 0.375rem;
+                        border-bottom-right-radius: 0.375rem;
+                      }
+                      .custom-quill .ql-editor {
+                        min-height: 200px;
+                      }
+                    `}</style>
+                    <ReactQuill
+                      value={currentEvent.description}
+                      onChange={(content) => setCurrentEvent(prev => ({ ...prev, description: content }))}
+                      placeholder="Provide deep description of moot court topic, parameters, case study details..."
+                      className="text-gray-800 custom-quill"
+                      modules={{
+                        toolbar: [
+                          ['bold', 'italic', 'underline', 'strike'],
+                          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                          [{ 'size': ['small', false, 'large', 'huge'] }],
+                          ['clean']
+                        ]
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {/* Capacity & Contact */}

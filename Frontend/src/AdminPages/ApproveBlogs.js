@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "./AdminComponents/AdminLayout";
 import { useNavigate } from "react-router-dom";
-import { FiLoader, FiAlertCircle, FiCheck } from "react-icons/fi";
+import { FiLoader, FiCheck } from "react-icons/fi";
 import BlogCard from "./AdminComponents/BlogCard";
 import BlogDetailModal from "./AdminComponents/BlogDetailModal";
 import { useAuth } from "../context/AuthContext";
@@ -48,14 +48,6 @@ const ApproveBlogs = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
-
-  const tabs = [
-    { label: 'Dashboard', path: '/admin/dashboard' },
-    { label: 'Blog Approvals', path: '/admin/approveblogs' },
-    { label: 'Blog Reviews', path: '/admin/reviewblogs' },
-    { label: 'SW Programs', path: '/admin/swprograms' },
-    { label: 'MootCourts', path: '/admin/mootcourt' }
-  ];
 
   useEffect(() => {
     let isMounted = true;
@@ -170,7 +162,8 @@ const ApproveBlogs = () => {
   };
 
   const handleApprove = async (blogId) => {
-    if (!blogId || blogId.length !== 24) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!blogId || !uuidRegex.test(blogId)) {
       alert("Invalid blog ID");
       return;
     }

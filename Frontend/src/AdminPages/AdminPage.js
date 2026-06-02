@@ -354,7 +354,7 @@ const AdminPage = () => {
             </div>
 
             {/* Upcoming Event items */}
-            <div className="space-y-4 font-sans">
+            <div className="space-y-4 font-sans max-h-[380px] overflow-y-auto pr-1">
               {(() => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
@@ -364,7 +364,6 @@ const AdminPage = () => {
                 }
                 return upcoming
                   .sort((a, b) => new Date(a.date) - new Date(b.date))
-                  .slice(0, 5)
                   .map((mc) => (
                     <div key={mc._id} className="rounded-xl border border-gray-100 shadow-sm p-3.5 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
                       <div className="flex items-center gap-4 text-left">

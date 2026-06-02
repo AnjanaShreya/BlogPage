@@ -1,0 +1,157 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  role         String    @default("user")
+  status       String    @default("Active") // Active, Pending Invite
+  inviteToken  String?
+  invitedRole  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  authoredBlogs Blog[]    @relation("BlogAuthor")
+  approvedBlogs Blog[]    @relation("BlogApprovedBy")
+}
+
+model Blog {
+  id              String   @id @default(uuid())
+  authorId        String
+  author          User     @relation("BlogAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  name            String
+  university      String
+  degree          String
+  year            String
+  shortBio        String
+  category        String
+  blogContent     String   @db.Text
+  heading         String
+  status          String   @default("pending") // pending, approved, rejected, needs-revision
+  reviewComments  String?  @db.Text
+  revisionCount   Int      @default(0)
+  approvedById    String?
+  approvedBy      User?    @relation("BlogApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectionReason String?  @db.Text
+  isResubmitted   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Program {
+  id              String               @id @default(uuid())
+  title           String
+  description     String               @db.Text
+  startDate       DateTime
+  endDate         DateTime
+  programType     String               @default("summer") // summer, winter, internship
+  status          String               @default("Active") // Active, Draft, Completed, Enrolling
+  hostInstitution String               @default("")
+  programFee      String               @default("")
+  speakerName     String               @default("")
+  maxCapacity     String               @default("")
+  liveSessionLink String               @default("")
+  prizePool       String               @default("")
+  courtVenue      String               @default("")
+  enrollmentType  String               @default("Individual")
+  capacityType    String               @default("Unlimited")
+  stipend         String               @default("")
+  duration        String               @default("")
+  seatsAvailable  String               @default("")
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  applications    ProgramApplication[]
+}
+
+model ProgramApplication {
+  id            String   @id @default(uuid())
+  programId     String
+  program       Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  name          String
+  email         String
+  college       String
+  status        String   @default("Pending") // Pending, Confirmed, Rejected
+  skills        String   @default("")
+  whyInterested String   @default("")
+  resumeLink    String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model MootCourt {
+  id                   String                  @id @default(uuid())
+  title                String
+  date                 DateTime
+  venue                String
+  description          String                  @db.Text
+  registrationDeadline DateTime
+  contact              String
+  teams                Int
+  prizes               String
+  rulesLink            String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+  schedule             MootCourtSchedule[]
+  registrations        MootCourtRegistration[]
+}
+
+model MootCourtSchedule {
+  id          String    @id @default(uuid())
+  mootCourtId String
+  mootCourt   MootCourt @relation(fields: [mootCourtId], references: [id], onDelete: Cascade)
+  day         String
+  events      String
+}
+
+model MootCourtRegistration {
+  id          String    @id @default(uuid())
+  mootCourtId String
+  mootCourt   MootCourt @relation(fields: [mootCourtId], references: [id], onDelete: Cascade)
+  name        String
+  email       String
+  college     String
+  leader      String    @default("")
+  members     String    @default("")
+  status      String    @default("Confirmed") // Pending, Confirmed, Rejected
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Internship {
+  id             String                  @id @default(uuid())
+  title          String
+  description    String                  @db.Text
+  startDate      DateTime
+  endDate        DateTime
+  programType    String                  @default("internship")
+  status         String                  @default("Active") // Active, Draft, Completed
+  stipend        String                  @default("")
+  duration       String                  @default("")
+  seatsAvailable String                  @default("")
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  applications   InternshipApplication[]
+}
+
+model InternshipApplication {
+  id           String     @id @default(uuid())
+  internshipId String
+  internship   Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  name         String
+  email         String
+  college      String
+  status       String     @default("Pending") // Pending, Confirmed, Rejected
+  skills       String     @default("")
+  whyInterested String    @default("")
+  resumeLink   String     @default("")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}

@@ -7,10 +7,12 @@ import ProfileCard from "../components/ProfileCard";
 import RecentInsights from "../components/RecentInsights";
 import img0 from '../assets/img0.jpg';
 import { FaLaptop, FaSearch, FaUsers, FaBrain, FaPenNib, FaChartLine, FaCheckCircle } from 'react-icons/fa';
+import { useAuth } from "../context/AuthContext";
 
 const Dashboard = () => {
   const [showPopup, setShowPopup] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, verifySession } = useAuth();
+  const isLoggedIn = !!user;
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [upcomingEvents, setUpcomingEvents] = useState([]);
@@ -102,8 +104,8 @@ const Dashboard = () => {
     setShowPopup(false);
   };
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
+  const handleLogin = async () => {
+    await verifySession();
     setShowPopup(false);
   };
 

@@ -1,15 +1,21 @@
-const Program = require('../Models/Program');
+const { prisma, isValidUUID, formatPrisma } = require('../config/prisma');
 
 // Get all programs
 exports.getAllPrograms = async (req, res) => {
   try {
-    const programs = await Program.find().sort({ startDate: 1 });
+    const programs = await prisma.program.findMany({
+      orderBy: { startDate: 'asc' },
+      include: {
+        applications: true
+      }
+    });
     
     res.status(200).json({
       success: true,
-      data: programs
+      data: formatPrisma(programs)
     });
   } catch (err) {
+    console.error('Error fetching programs:', err);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch programs',
@@ -21,48 +27,95 @@ exports.getAllPrograms = async (req, res) => {
 // Create a new program
 exports.createProgram = async (req, res) => {
   try {
-    // Convert string dates to Date objects
     const programData = {
-      ...req.body,
+      title: req.body.title,
+      description: req.body.description,
       startDate: new Date(req.body.startDate),
-      endDate: new Date(req.body.endDate)
+      endDate: new Date(req.body.endDate),
+      programType: req.body.programType || 'summer',
+      status: req.body.status || 'Active',
+      hostInstitution: req.body.hostInstitution || '',
+      programFee: req.body.programFee || '',
+      speakerName: req.body.speakerName || '',
+      maxCapacity: req.body.maxCapacity || '',
+      liveSessionLink: req.body.liveSessionLink || '',
+      prizePool: req.body.prizePool || '',
+      courtVenue: req.body.courtVenue || '',
+      enrollmentType: req.body.enrollmentType || 'Individual',
+      capacityType: req.body.capacityType || 'Unlimited',
+      stipend: req.body.stipend || '',
+      duration: req.body.duration || '',
+      seatsAvailable: req.body.seatsAvailable || ''
     };
 
-    const program = new Program(programData);
-    const savedProgram = await program.save();
+    const savedProgram = await prisma.program.create({
+      data: programData,
+      include: {
+        applications: true
+      }
+    });
     
     res.status(201).json({
       success: true,
-      data: savedProgram
+      data: formatPrisma(savedProgram)
     });
   } catch (err) {
+    console.error('Error creating program:', err);
     res.status(400).json({
       success: false,
       message: 'Failed to create program',
-      error: err.message,
-      errors: err.errors ? Object.values(err.errors).map(e => e.message) : undefined
+      error: err.message
     });
   }
 };
 
+// Update program
 exports.updateProgram = async (req, res) => {
-  
   try {
-    const updatedProgram = await Program.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!updatedProgram) {
-      return res.status(404).json({
+    const { id } = req.params;
+    if (!isValidUUID(id)) {
+      return res.status(400).json({
         success: false,
-        message: 'Program not found'
+        message: 'Invalid program ID format'
       });
     }
+
+    const updateData = {
+      title: req.body.title,
+      description: req.body.description,
+      startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+      endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
+      programType: req.body.programType,
+      status: req.body.status,
+      hostInstitution: req.body.hostInstitution,
+      programFee: req.body.programFee,
+      speakerName: req.body.speakerName,
+      maxCapacity: req.body.maxCapacity,
+      liveSessionLink: req.body.liveSessionLink,
+      prizePool: req.body.prizePool,
+      courtVenue: req.body.courtVenue,
+      enrollmentType: req.body.enrollmentType,
+      capacityType: req.body.capacityType,
+      stipend: req.body.stipend,
+      duration: req.body.duration,
+      seatsAvailable: req.body.seatsAvailable
+    };
+
+    // Clean undefined fields from updateData
+    Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
+
+    const updatedProgram = await prisma.program.update({
+      where: { id },
+      data: updateData,
+      include: {
+        applications: true
+      }
+    });
+
     res.status(200).json({
       success: true,
       message: 'Program updated successfully',
-      data: updatedProgram
+      data: formatPrisma(updatedProgram)
     });
   } catch (error) {
     console.error('Error updating program:', error);
@@ -74,31 +127,27 @@ exports.updateProgram = async (req, res) => {
   }
 };
 
-
 // Delete a program
 exports.deleteProgram = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    const { id } = req.params;
+    if (!isValidUUID(id)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid program ID format'
       });
     }
 
-    const deletedProgram = await Program.findByIdAndDelete(req.params.id);
-    
-    if (!deletedProgram) {
-      return res.status(404).json({
-        success: false,
-        message: 'Program not found'
-      });
-    }
+    await prisma.program.delete({
+      where: { id }
+    });
     
     res.status(200).json({
       success: true,
       message: 'Program deleted successfully'
     });
   } catch (err) {
+    console.error('Error deleting program:', err);
     res.status(500).json({
       success: false,
       message: 'Failed to delete program',
@@ -110,14 +159,19 @@ exports.deleteProgram = async (req, res) => {
 exports.getUpcomingProgramCount = async (req, res) => {
   try {
     const today = new Date();
-    const count = await Program.countDocuments({ startDate: { $gt: today } });
+    const count = await prisma.program.count({
+      where: {
+        startDate: { gt: today }
+      }
+    });
     res.status(200).json({ count });
   } catch (error) {
+    console.error('Error fetching upcoming program count:', error);
     res.status(500).json({ message: 'Error fetching upcoming programs', error: error.message });
   }
 };
 
-// Update application status inside an internship
+// Update application status inside a program
 exports.updateApplicationStatus = async (req, res) => {
   try {
     const { id, appId } = req.params;
@@ -130,29 +184,51 @@ exports.updateApplicationStatus = async (req, res) => {
       });
     }
 
-    const program = await Program.findById(id);
-    if (!program) {
-      return res.status(404).json({
+    if (!isValidUUID(id) || !isValidUUID(appId)) {
+      return res.status(400).json({
         success: false,
-        message: 'Internship program not found'
+        message: 'Invalid ID format'
       });
     }
 
-    const application = program.applications.id(appId);
-    if (!application) {
+    const programCheck = await prisma.program.findUnique({
+      where: { id }
+    });
+
+    if (!programCheck) {
+      return res.status(404).json({
+        success: false,
+        message: 'Program not found'
+      });
+    }
+
+    const applicationCheck = await prisma.programApplication.findUnique({
+      where: { id: appId }
+    });
+
+    if (!applicationCheck) {
       return res.status(404).json({
         success: false,
         message: 'Application not found'
       });
     }
 
-    application.status = status;
-    await program.save();
+    await prisma.programApplication.update({
+      where: { id: appId },
+      data: { status }
+    });
+
+    const updatedProgram = await prisma.program.findUnique({
+      where: { id },
+      include: {
+        applications: true
+      }
+    });
 
     res.status(200).json({
       success: true,
       message: `Successfully set application status to ${status}`,
-      data: program
+      data: formatPrisma(updatedProgram)
     });
   } catch (error) {
     console.error('Error in updateApplicationStatus:', error);
@@ -177,7 +253,17 @@ exports.applyToProgram = async (req, res) => {
       });
     }
 
-    const program = await Program.findById(id);
+    if (!isValidUUID(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid program ID format'
+      });
+    }
+
+    const program = await prisma.program.findUnique({
+      where: { id }
+    });
+
     if (!program) {
       return res.status(404).json({
         success: false,
@@ -186,23 +272,30 @@ exports.applyToProgram = async (req, res) => {
     }
 
     // Add candidate application
-    const newApplication = {
-      name,
-      email,
-      college,
-      skills: skills || '',
-      whyInterested: whyInterested || '',
-      resumeLink: resumeLink || '',
-      status: 'Pending'
-    };
+    await prisma.programApplication.create({
+      data: {
+        programId: id,
+        name,
+        email,
+        college,
+        skills: skills || '',
+        whyInterested: whyInterested || '',
+        resumeLink: resumeLink || '',
+        status: 'Pending'
+      }
+    });
 
-    program.applications.push(newApplication);
-    const updatedProgram = await program.save();
+    const updatedProgram = await prisma.program.findUnique({
+      where: { id },
+      include: {
+        applications: true
+      }
+    });
 
     res.status(200).json({
       success: true,
       message: 'Application submitted successfully',
-      data: updatedProgram
+      data: formatPrisma(updatedProgram)
     });
   } catch (error) {
     console.error('Error applying to program:', error);

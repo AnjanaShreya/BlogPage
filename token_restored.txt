@@ -1,0 +1,11 @@
+{
+  "id": "38295d17-4a51-4247-a695-7b0a31f16464",
+  "email": "nicimid755@doreact.com",
+  "password": "$2b$12$pRvf7cQ/pZgsw6R/M2X0juigoiUvt7h3AH.iPJrT0KNps4tiUAu0S",
+  "role": "Blog Reviewer",
+  "status": "Active",
+  "inviteToken": "6f27f5eb48ec8bfb8f832676abea1bc02bcd3cf8e28621736534c9485bfb28bf",
+  "invitedRole": null,
+  "createdAt": "2026-06-02T13:51:26.678Z",
+  "updatedAt": "2026-06-02T13:57:15.595Z"
+}

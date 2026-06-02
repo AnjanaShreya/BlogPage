@@ -125,7 +125,8 @@ const SAApprove = () => {
   };
 
   const handleApprove = async (blogId) => {
-    if (!blogId || blogId.length !== 24) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!blogId || !uuidRegex.test(blogId)) {
       alert("Invalid blog ID");
       return;
     }

@@ -49,14 +49,6 @@ const BlogReview = () => {
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
-  const tabs = [
-    { label: 'Dashboard', path: '/admin/dashboard' },
-    { label: 'Blog Approvals', path: '/admin/approveblogs' },
-    { label: 'Blog Reviews', path: '/admin/reviewblogs' },
-    { label: 'SW Programs', path: '/admin/swprograms' },
-    { label: 'MootCourts', path: '/admin/mootcourt' }
-  ];
-
   useEffect(() => {
     let isMounted = true;
 
@@ -118,34 +110,6 @@ const BlogReview = () => {
     };
   }, [navigate, baseUrl, user?.role, authLoading]);
 
-  const fetchReviewBlogs = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch(`${baseUrl}/api/blogs/review`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: 'include'
-      });
-
-      if (response.status === 200) {
-        const result = await response.json();
-        setBlogs(Array.isArray(result.data) ? result.data : result);
-      } else if (response.status === 401) {
-        navigate("/admin/login");
-      } else {
-        throw new Error("Failed to fetch pending blogs needing review");
-      }
-    } catch (err) {
-      console.error("Error fetching review blogs:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const sendEmailNotification = async (email, subject, message) => {
     try {
       const response = await fetch(`${baseUrl}/api/email/send-email`, {
@@ -170,7 +134,8 @@ const BlogReview = () => {
   };
 
   const handleApprove = async (blogId) => {
-    if (!blogId || blogId.length !== 24) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!blogId || !uuidRegex.test(blogId)) {
       alert("Invalid blog ID");
       return;
     }
