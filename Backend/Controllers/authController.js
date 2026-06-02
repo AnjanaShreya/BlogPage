@@ -6,7 +6,7 @@ const { prisma, formatPrisma } = require("../config/prisma");
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   maxAge: 3600000 // 1 hour
 };
 
@@ -175,7 +175,7 @@ exports.requireSubadmin = (req, res, next) => {
 exports.signout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: process.env.NODE_ENV === 'production',
   });
   res.status(200).json({ message: "Signed out successfully" });

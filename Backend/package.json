@@ -17,6 +17,7 @@
   "main": "Server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "prisma generate",
     "start": "node server.js"
   },
   "keywords": [],
