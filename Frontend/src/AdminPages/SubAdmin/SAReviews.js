@@ -102,6 +102,7 @@ const SAReviews = () => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, baseUrl, authLoading]);
 
   const sendEmailNotification = async (email, subject, message) => {

@@ -17,6 +17,7 @@ const Settings = () => {
   const [role, setRole] = useState('Chief Editor');
   const [isOpen, setIsOpen] = useState(false);
   const [subAdmins, setSubAdmins] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
   
   const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -56,6 +57,7 @@ const Settings = () => {
 
   useEffect(() => {
     fetchSubAdmins();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleInvite = async (e) => {
