@@ -18,7 +18,7 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   prisma.$connect()
     .then(async () => {
       console.log('✅ Neon PostgreSQL (Prisma) connected successfully');
-      
+
       // Auto-fix/restore setup-password token for user 'nicimid755@doreact.com' if needed
       try {
         const email = 'nicimid755@doreact.com';
@@ -41,9 +41,12 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     });
 }
 
-// Middleware
+const frontendOrigin = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.replace(/\/$/, "")
+  : 'http://localhost:3000';
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: frontendOrigin,
   credentials: true,
 }));
 app.use(express.json());
@@ -61,12 +64,12 @@ app.use('/api/email', emailRoutes);
 app.get('/health', async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.status(200).json({ 
+    res.status(200).json({
       status: 'OK',
       database: 'Connected'
     });
   } catch (err) {
-    res.status(500).json({ 
+    res.status(500).json({
       status: 'Error',
       database: 'Disconnected',
       error: err.message
@@ -77,7 +80,7 @@ app.get('/health', async (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('🚨 Error:', err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     success: false,
     message: 'Internal Server Error',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
